@@ -6,9 +6,6 @@
 
 #include <SDL2/SDL.h>
 
-#define BLOCK_ANIM_TIME 15
-#define BLOCK_ANIM_DELAY_BETWEEN_COLUMN 2
-
 typedef enum {
 	BLOCK_SEL = 0,
 	BLOCK_SEL2,
@@ -56,11 +53,17 @@ typedef struct {
 		} dropper;
 	} data;
 
-	dir_t dir;
+	dir_t  dir;
+	size_t cost;
 
-	size_t anim_timer, anim_time;
+	size_t timer, anim_time;
+	size_t top_timer, top_anim_time;
 	bool   active;
 } block_t;
+
+extern size_t block_type_cost_map[BLOCKS_COUNT];
+
+size_t block_type_cost(block_type_t p_type);
 
 block_t block_new_with_top(block_type_t p_floor, block_type_t p_top);
 
@@ -70,5 +73,7 @@ void block_add_top(block_t *p_block, block_type_t p_top, dir_t p_dir);
 void block_remove_top(block_t *p_block);
 
 void block_set_timer(block_t *p_block, size_t p_time);
+void block_set_floor_timer(block_t *p_block, size_t p_time);
+void block_set_top_timer(block_t *p_block, size_t p_time);
 
 #endif

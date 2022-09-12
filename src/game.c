@@ -169,17 +169,18 @@ void game_render_block(game_t *p_game, block_t *p_block, int p_x, int p_y) {
 	SDL_Point sheet_pos = game_get_block_sheet_pos(p_game, p_block->floor);
 
 	int size = BLOCK_SIZE;
-	if (p_block->anim_timer > 0) {
-		size = (1 - (float)p_block->anim_timer / (float)p_block->anim_time) * BLOCK_SIZE;
-
-		-- p_block->anim_timer;
-	}
+	if (p_block->timer > 0)
+		size = (1 - (float)p_block->timer / (float)p_block->anim_time) * BLOCK_SIZE;
 
 	game_render_isometric_tile(p_game, (SDL_Point){.x = p_x, .y = p_y}, size,
 	                           p_game->blocks.texture, sheet_pos, false);
 
 	if (p_block->has_top) {
 		sheet_pos = game_get_block_sheet_pos(p_game, block_top_sprite_id(p_block));
+
+		size = BLOCK_SIZE;
+		if (p_block->top_timer > 0)
+			size = (1 - (float)p_block->top_timer / (float)p_block->top_anim_time) * BLOCK_SIZE;
 
 		game_render_isometric_tile(p_game, (SDL_Point){.x = p_x, .y = p_y}, size,
 		                           p_game->blocks.texture, sheet_pos, true);
@@ -243,10 +244,10 @@ void game_render_ui(game_t *p_game) {
 
 	texture_t gold = text_renderer_render(&p_game->trend, gold_str);
 
-	gold.rect.x = gold.rect.w / 2 + p_game->gold_icon.rect.w + 2;
+	gold.rect.x = p_game->trend.font.ch_w / 2 + p_game->gold_icon.rect.w + 2;
 	gold.rect.y = gold.rect.h / 2;
 
-	p_game->gold_icon.rect.x = gold.rect.w / 2;
+	p_game->gold_icon.rect.x = p_game->trend.font.ch_w / 2;
 	p_game->gold_icon.rect.y = gold.rect.h / 2 - round(p_game->gold_icon.rect.h - gold.rect.h) / 2;
 	texture_render(&p_game->gold_icon, p_game->renderer);
 
@@ -285,6 +286,21 @@ void game_animate_block(game_t *p_game, SDL_Point p_pos) {
 
 	block_set_timer(&p_game->map[p_pos.y][p_pos.x], BLOCK_ANIM_TIME);
 	p_game->map[p_pos.y][p_pos.x].active = true;
+}
+
+void game_place_cursor_block(game_t *p_game) {
+	block_add_top(game_cursor_block(p_game),
+	              p_game->cursor_block.top,
+	              p_game->cursor_block.dir);
+
+	block_set_top_timer(game_cursor_block(p_game), BLOCK_ANIM_TIME);
+}
+
+void game_refund_cursor_block(game_t *p_game) {
+	p_game->gold += game_cursor_block(p_game)->cost * REFUND_PENALTY;
+	block_remove_top(game_cursor_block(p_game));
+
+	game_shake_screen(p_game);
 }
 
 void game_render(game_t *p_game) {
@@ -338,17 +354,10 @@ void game_events(game_t *p_game) {
 				break;
 
 			case SDLK_RETURN:
-				if (p_game->mode == MODE_PLACING && !game_cursor_has_block(p_game)) {
-					block_add_top(game_cursor_block(p_game),
-					              p_game->cursor_block.top,
-					              p_game->cursor_block.dir);
-
-					game_shake_screen(p_game);
-				} else if (p_game->mode == MODE_DELETING && game_cursor_has_block(p_game)) {
-					block_remove_top(game_cursor_block(p_game));
-
-					game_shake_screen(p_game);
-				}
+				if (p_game->mode == MODE_PLACING && !game_cursor_has_block(p_game))
+					game_place_cursor_block(p_game);
+				else if (p_game->mode == MODE_DELETING && game_cursor_has_block(p_game))
+					game_refund_cursor_block(p_game);
 
 				break;
 
@@ -380,6 +389,16 @@ void game_events(game_t *p_game) {
 
 void game_update(game_t *p_game) {
 	++ p_game->tick;
+
+	for (size_t i = 0; i < MAP_SIZE; ++ i) {
+		for (size_t j = 0; j < MAP_SIZE; ++ j) {
+			if (p_game->map[i][j].timer > 0)
+				-- p_game->map[i][j].timer;
+
+			if (p_game->map[i][j].top_timer > 0)
+				-- p_game->map[i][j].top_timer;
+		}
+	}
 
 	if (p_game->shake_timer > 0) {
 		p_game->screen_shake_offset.x = p_game->shake_timer / 2 - rand() % p_game->shake_timer;

@@ -17,7 +17,7 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
-#define VERSION_PATCH 0
+#define VERSION_PATCH 1
 
 #define TITLE "Your Factory"
 
@@ -35,7 +35,12 @@
 #define MAP_POS_X SCREEN_W / 2 - BLOCK_SIZE / 2
 #define MAP_POS_Y 1.5 * BLOCK_SIZE
 
+#define BLOCK_ANIM_TIME 15
+#define BLOCK_ANIM_DELAY_BETWEEN_COLUMN 2
+
 #define SCREEN_SHAKE_TIME 5
+
+#define REFUND_PENALTY 0.7
 
 typedef enum {
 	MODE_VIEWING = 0,
@@ -94,6 +99,9 @@ const char *game_mode_name(game_t *p_game);
 
 void game_shake_screen(game_t *p_game);
 void game_animate_block(game_t *p_game, SDL_Point p_pos);
+
+void game_place_cursor_block(game_t *p_game);
+void game_refund_cursor_block(game_t *p_game);
 
 void game_render(game_t *p_game);
 void game_events(game_t *p_game);
