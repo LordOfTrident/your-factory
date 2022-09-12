@@ -131,11 +131,11 @@ void game_run(game_t *p_game) {
 	} while (!p_game->quit);
 }
 
-void game_render_isometric_tile(game_t *p_game, SDL_Point p_pos, int p_size, SDL_Texture *p_texture,
-                                SDL_Point p_src, bool p_top_layer) {
+void game_render_isometric_tile(game_t *p_game, int p_x, int p_y, int p_size,
+                                SDL_Texture *p_texture, SDL_Point p_src, bool p_top_layer) {
 	SDL_Rect dest = {
-		.x = p_pos.x * (BLOCK_SIZE / 2) + p_pos.y * -(BLOCK_SIZE / 2),
-		.y = p_pos.x * (BLOCK_SIZE / 4) + p_pos.y *  (BLOCK_SIZE / 4),
+		.x = p_x * (BLOCK_SIZE / 2) + p_y * -(BLOCK_SIZE / 2),
+		.y = p_x * (BLOCK_SIZE / 4) + p_y *  (BLOCK_SIZE / 4),
 		.w = p_size,
 		.h = p_size
 	};
@@ -172,8 +172,7 @@ void game_render_block(game_t *p_game, block_t *p_block, int p_x, int p_y) {
 	if (p_block->timer > 0)
 		size = (1 - (float)p_block->timer / (float)p_block->anim_time) * BLOCK_SIZE;
 
-	game_render_isometric_tile(p_game, (SDL_Point){.x = p_x, .y = p_y}, size,
-	                           p_game->blocks.texture, sheet_pos, false);
+	game_render_isometric_tile(p_game, p_x, p_y, size, p_game->blocks.texture, sheet_pos, false);
 
 	if (p_block->has_top) {
 		sheet_pos = game_get_block_sheet_pos(p_game, block_top_sprite_id(p_block));
@@ -182,8 +181,7 @@ void game_render_block(game_t *p_game, block_t *p_block, int p_x, int p_y) {
 		if (p_block->top_timer > 0)
 			size = (1 - (float)p_block->top_timer / (float)p_block->top_anim_time) * BLOCK_SIZE;
 
-		game_render_isometric_tile(p_game, (SDL_Point){.x = p_x, .y = p_y}, size,
-		                           p_game->blocks.texture, sheet_pos, true);
+		game_render_isometric_tile(p_game, p_x, p_y, size, p_game->blocks.texture, sheet_pos, true);
 	}
 }
 
@@ -203,8 +201,8 @@ void game_render_cursor(game_t *p_game) {
 			else
 				SDL_SetTextureColorMod(p_game->blocks.texture, 0, 255, 0);
 
-			game_render_isometric_tile(p_game, p_game->cursor, BLOCK_SIZE, p_game->blocks.texture,
-			                           sheet_pos, true);
+			game_render_isometric_tile(p_game, p_game->cursor.x, p_game->cursor.y, BLOCK_SIZE,
+			                           p_game->blocks.texture, sheet_pos, true);
 
 			SDL_SetTextureColorMod(p_game->blocks.texture, 255, 255, 255);
 			SDL_SetTextureAlphaMod(p_game->blocks.texture, SDL_ALPHA_OPAQUE);
@@ -217,8 +215,8 @@ void game_render_cursor(game_t *p_game) {
 	SDL_Point sheet_pos = game_get_block_sheet_pos(p_game,
 	                                               BLOCK_SEL + round(sin(p_game->tick / 10)) + 1);
 
-	game_render_isometric_tile(p_game, p_game->cursor, BLOCK_SIZE, p_game->blocks.texture,
-	                           sheet_pos, false);
+	game_render_isometric_tile(p_game, p_game->cursor.x, p_game->cursor.y, BLOCK_SIZE,
+	                           p_game->blocks.texture, sheet_pos, false);
 
 	if (p_game->mode == MODE_VIEWING)
 		SDL_SetTextureAlphaMod(p_game->blocks.texture, SDL_ALPHA_OPAQUE);

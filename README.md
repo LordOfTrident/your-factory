@@ -39,6 +39,7 @@ $ ./bin/app
 | ---------- | ---------------------- |
 | E          | Placing mode           |
 | Backspace  | Deleting mode          |
+| Enter      | Place/Delete           |
 | ESC        | Exit the current mode  |
 | Q          | Quit the game          |
 

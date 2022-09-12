@@ -6,6 +6,10 @@
 #include <assert.h>  /* asset */
 #include <stdbool.h> /* bool, true, false */
 
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
 #include <SDL2/SDL.h>
 
 #define SIZE_OF(p_arr) (sizeof(p_arr) / sizeof(p_arr[0]))

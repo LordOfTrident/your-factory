@@ -3,17 +3,14 @@
 
 #include <stdlib.h>  /* exit, EXIT_FAILURE, EXIT_SUCCESS, size_t */
 #include <stdbool.h> /* bool, true, false */
-#include <math.h>    /* sin */
+#include <math.h>    /* sin, round */
+
 #include <stdio.h>   /* snprintf, printf, puts */
 
 #include <SDL2/SDL.h>
 
 #include "text.h"
 #include "block.h"
-
-#ifndef M_PI
-    #define M_PI 3.14159265358979323846
-#endif
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
@@ -37,6 +34,8 @@
 
 #define BLOCK_ANIM_TIME 15
 #define BLOCK_ANIM_DELAY_BETWEEN_COLUMN 2
+
+#define GRAVITY_ACCELERATION 0.3
 
 #define SCREEN_SHAKE_TIME 5
 
@@ -83,8 +82,8 @@ game_t game_new(void);
 void   game_quit(game_t *p_game);
 void   game_run(game_t *p_game);
 
-void game_render_isometric_tile(game_t *p_game, SDL_Point p_pos, int p_size, SDL_Texture *p_texture,
-                                SDL_Point p_src, bool p_top_layer);
+void game_render_isometric_tile(game_t *p_game, int p_x, int p_y, int p_size,
+                                SDL_Texture *p_texture, SDL_Point p_src, bool p_top_layer);
 void game_render_block(game_t *p_game, block_t *p_block, int p_x, int p_y);
 void game_render_cursor(game_t *p_game);
 void game_render_map(game_t *p_game);
