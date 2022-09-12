@@ -37,6 +37,10 @@ $ ./bin/app
 ## Controls
 | Key        | Action                 |
 | ---------- | ---------------------- |
+| W          | Move cursor up         |
+| A          | Move cursor left       |
+| S          | Move cursor down       |
+| D          | Move cursor right      |
 | E          | Placing mode           |
 | Backspace  | Deleting mode          |
 | Enter      | Place/Delete           |
