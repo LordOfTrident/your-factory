@@ -1,6 +1,10 @@
 #ifndef GAME_H__HEADER_GUARD__
 #define GAME_H__HEADER_GUARD__
 
+/* TODO:
+	i guess add functions like game_block_update_particles and game_block_render_particles
+*/
+
 #include <stdlib.h>  /* exit, EXIT_FAILURE, EXIT_SUCCESS, size_t */
 #include <stdbool.h> /* bool, true, false */
 #include <math.h>    /* sin, round */
@@ -11,9 +15,10 @@
 
 #include "text.h"
 #include "block.h"
+#include "particle.h"
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 1
+#define VERSION_MINOR 2
 #define VERSION_PATCH 1
 
 #define TITLE "Your Factory"
@@ -59,11 +64,13 @@ typedef struct {
 	size_t fps, tick;
 
 	text_renderer_t trend;
-	texture_t       blocks, gold_icon;
+	texture_t       blocks, gold_icon, dust;
 
 	SDL_Point block_id_pos_map[BLOCKS_COUNT];
 
 	block_t map[MAP_SIZE][MAP_SIZE];
+
+	particle_t particles[512];
 
 	SDL_Point cursor;
 	block_t         cursor_block;
@@ -84,10 +91,12 @@ void   game_run(game_t *p_game);
 
 void game_render_isometric_tile(game_t *p_game, int p_x, int p_y, int p_size,
                                 SDL_Texture *p_texture, SDL_Point p_src, bool p_top_layer);
-void game_render_block(game_t *p_game, block_t *p_block, int p_x, int p_y);
+void game_render_block(game_t *p_game, int p_x, int p_y);
 void game_render_cursor(game_t *p_game);
 void game_render_map(game_t *p_game);
 void game_render_ui(game_t *p_game);
+
+void game_render_particles_at(game_t *p_game, int p_x, int p_y);
 
 SDL_Point game_get_block_sheet_pos(game_t *p_game, block_type_t p_type);
 
@@ -96,6 +105,7 @@ bool     game_cursor_has_block(game_t *p_game);
 
 const char *game_mode_name(game_t *p_game);
 
+void game_emit_particles_at(game_t *p_game, int p_x, int p_y, size_t p_amount);
 void game_shake_screen(game_t *p_game);
 void game_animate_block(game_t *p_game, SDL_Point p_pos);
 

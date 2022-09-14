@@ -1,6 +1,6 @@
 #include "particle.h"
 
-void particle_emit(particle_t *p_particle, float p_vel_x, float p_vel_y,
+void particle_emit(particle_t *p_particle, texture_t *p_texture, float p_vel_x, float p_vel_y,
                    int p_x, int p_y, size_t p_lifetime, float p_gravity) {
 	p_particle->vel_x = p_vel_x;
 	p_particle->vel_y = p_vel_y;
@@ -9,6 +9,8 @@ void particle_emit(particle_t *p_particle, float p_vel_x, float p_vel_y,
 
 	p_particle->lifetime = p_lifetime;
 	p_particle->timer    = p_lifetime;
+
+	p_particle->texture = *p_texture;
 
 	p_particle->gravity = p_gravity;
 }
@@ -24,4 +26,7 @@ void particle_update(particle_t *p_particle) {
 
 	p_particle->x += p_particle->vel_x;
 	p_particle->y += p_particle->vel_y;
+
+	p_particle->vel_x *= FRICTION;
+	p_particle->vel_y *= FRICTION;
 }

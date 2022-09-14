@@ -49,6 +49,43 @@ void block_remove_top(block_t *p_block) {
 	p_block->has_top = false;
 }
 
+void block_update_particles(block_t *p_block) {
+	if (!p_block->has_particles)
+		return;
+
+	bool no_active_particles = false;
+	for (size_t i = 0; i < SIZE_OF(p_block->particles); ++ i) {
+		if (p_block->particles[i] != NULL) {
+			if (p_block->particles[i]->timer == 0)
+				p_block->particles[i] = NULL;
+			else {
+				particle_update(p_block->particles[i]);
+				no_active_particles = false;
+			}
+		}
+	}
+
+	if (no_active_particles)
+		p_block->has_particles = false;
+}
+
+void block_emit_particle(block_t *p_block, particle_t *p_particle, texture_t *p_texture,
+                         float p_vel_x, float p_vel_y,
+                         int p_x, int p_y, size_t p_lifetime, float p_gravity) {
+	p_block->has_particles = true;
+
+	for (size_t i = 0; i < SIZE_OF(p_block->particles); ++ i) {
+		if (p_block->particles[i] == NULL) {
+			p_block->particles[i] = p_particle;
+			particle_emit(p_particle, p_texture, p_vel_x, p_vel_y, p_x, p_y, p_lifetime, p_gravity);
+
+			return;
+		}
+	}
+
+	assert(0 && "No more block particles space");
+}
+
 void block_set_timer(block_t *p_block, size_t p_time) {
 	block_set_floor_timer(p_block, p_time);
 	block_set_top_timer(p_block, p_time);

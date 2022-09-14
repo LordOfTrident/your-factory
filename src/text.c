@@ -110,13 +110,15 @@ texture_t text_renderer_render(text_renderer_t *p_trend, const char *p_text) {
 		exit(EXIT_FAILURE);
 	}
 
-	texture_t text_texture = {
-		.surface = surface,
-		.texture = texture
-	};
+	SDL_FreeSurface(surface);
 
-	text_texture.rect.w = src.w * text_len;
-	text_texture.rect.h = src.h;
+	texture_t text_texture = {
+		.texture = texture,
+		.rect = {
+			.w = src.w * text_len,
+			.h = src.h
+		}
+	};
 
 	p_trend->cache[idx].key   = text;
 	p_trend->cache[idx].value = text_texture;

@@ -28,15 +28,13 @@ char *copy_str(const char *p_str);
 
 typedef struct {
 	SDL_Texture *texture;
-	SDL_Surface *surface;
-
-	SDL_Rect rect;
+	SDL_Rect     rect;
 } texture_t;
 
 texture_t texture_load(SDL_Renderer *p_renderer, const char *p_path);
 void      texture_free(texture_t *p_texture);
 
-void texture_render(texture_t *p_texture, SDL_Renderer *p_renderer);
+void texture_render(texture_t *p_texture, SDL_Renderer *p_renderer, SDL_Rect *p_src);
 
 SDL_Color SDL_GetSurfacePixel(SDL_Surface *p_surface, int p_x, int p_y);
 

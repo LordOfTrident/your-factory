@@ -6,6 +6,9 @@
 
 #include <SDL2/SDL.h>
 
+#include "particle.h"
+#include "utils.h"
+
 typedef enum {
 	BLOCK_SEL = 0,
 	BLOCK_SEL2,
@@ -56,6 +59,9 @@ typedef struct {
 	dir_t  dir;
 	size_t cost;
 
+	particle_t *particles[64];
+	bool        has_particles;
+
 	size_t timer, anim_time;
 	size_t top_timer, top_anim_time;
 	bool   active;
@@ -71,6 +77,11 @@ block_type_t block_top_sprite_id(block_t *p_block);
 
 void block_add_top(block_t *p_block, block_type_t p_top, dir_t p_dir);
 void block_remove_top(block_t *p_block);
+
+void block_update_particles(block_t *p_block);
+void block_emit_particle(block_t *p_block, particle_t *p_particle, texture_t *p_texture,
+                         float p_vel_x, float p_vel_y,
+                         int p_x, int p_y, size_t p_lifetime, float p_gravity);
 
 void block_set_timer(block_t *p_block, size_t p_time);
 void block_set_floor_timer(block_t *p_block, size_t p_time);

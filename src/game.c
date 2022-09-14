@@ -82,6 +82,7 @@ game_t game_new(void) {
 
 	game.blocks    = texture_load(game.renderer, "./res/blocks.bmp");
 	game.gold_icon = texture_load(game.renderer, "./res/icons.bmp");
+	game.dust      = texture_load(game.renderer, "./res/particles.bmp");
 
 	for (int i = 0; i < BLOCKS_COUNT; ++ i) {
 		game.block_id_pos_map[i].x = i % (game.blocks.rect.w / BLOCK_SIZE) * BLOCK_SIZE;
@@ -100,6 +101,8 @@ void game_quit(game_t *p_game) {
 	text_renderer_destroy(&p_game->trend);
 
 	texture_free(&p_game->blocks);
+	texture_free(&p_game->gold_icon);
+	texture_free(&p_game->dust);
 
 	SDL_DestroyTexture(p_game->screen);
 	SDL_DestroyRenderer(p_game->renderer);
@@ -162,24 +165,26 @@ void game_render_isometric_tile(game_t *p_game, int p_x, int p_y, int p_size,
 	SDL_RenderCopy(p_game->renderer, p_texture, &src, &dest);
 }
 
-void game_render_block(game_t *p_game, block_t *p_block, int p_x, int p_y) {
-	if (!p_block->active)
+void game_render_block(game_t *p_game, int p_x, int p_y) {
+	block_t *block = &p_game->map[p_y][p_x];
+
+	if (!block->active)
 		return;
 
-	SDL_Point sheet_pos = game_get_block_sheet_pos(p_game, p_block->floor);
+	SDL_Point sheet_pos = game_get_block_sheet_pos(p_game, block->floor);
 
 	int size = BLOCK_SIZE;
-	if (p_block->timer > 0)
-		size = (1 - (float)p_block->timer / (float)p_block->anim_time) * BLOCK_SIZE;
+	if (block->timer > 0)
+		size = (1 - (float)block->timer / (float)block->anim_time) * BLOCK_SIZE;
 
 	game_render_isometric_tile(p_game, p_x, p_y, size, p_game->blocks.texture, sheet_pos, false);
 
-	if (p_block->has_top) {
-		sheet_pos = game_get_block_sheet_pos(p_game, block_top_sprite_id(p_block));
+	if (block->has_top) {
+		sheet_pos = game_get_block_sheet_pos(p_game, block_top_sprite_id(block));
 
 		size = BLOCK_SIZE;
-		if (p_block->top_timer > 0)
-			size = (1 - (float)p_block->top_timer / (float)p_block->top_anim_time) * BLOCK_SIZE;
+		if (block->top_timer > 0)
+			size = (1 - (float)block->top_timer / (float)block->top_anim_time) * BLOCK_SIZE;
 
 		game_render_isometric_tile(p_game, p_x, p_y, size, p_game->blocks.texture, sheet_pos, true);
 	}
@@ -224,8 +229,10 @@ void game_render_cursor(game_t *p_game) {
 
 void game_render_map(game_t *p_game) {
 	for (int i = 0; i < MAP_SIZE; ++ i) {
-		for (int j = 0; j < MAP_SIZE; ++ j)
-			game_render_block(p_game, &p_game->map[i][j], j, i);
+		for (int j = 0; j < MAP_SIZE; ++ j) {
+			game_render_block(p_game, j, i);
+			game_render_particles_at(p_game, j, i);
+		}
 	}
 }
 
@@ -235,7 +242,7 @@ void game_render_ui(game_t *p_game) {
 	mode.rect.x = SCREEN_W / 2 - mode.rect.w / 2;
 	mode.rect.y = SCREEN_H - mode.rect.h * 2;
 
-	texture_render(&mode, p_game->renderer);
+	texture_render(&mode, p_game->renderer, NULL);
 
 	char gold_str[128] = {0};
 	snprintf(gold_str, sizeof(gold_str), "%zu", p_game->gold);
@@ -247,9 +254,38 @@ void game_render_ui(game_t *p_game) {
 
 	p_game->gold_icon.rect.x = p_game->trend.font.ch_w / 2;
 	p_game->gold_icon.rect.y = gold.rect.h / 2 - round(p_game->gold_icon.rect.h - gold.rect.h) / 2;
-	texture_render(&p_game->gold_icon, p_game->renderer);
+	texture_render(&p_game->gold_icon, p_game->renderer, NULL);
 
-	texture_render(&gold, p_game->renderer);
+	texture_render(&gold, p_game->renderer, NULL);
+}
+
+void game_render_particles_at(game_t *p_game, int p_x, int p_y) {
+	int x = p_x * (BLOCK_SIZE / 2) + p_y * -(BLOCK_SIZE / 2);
+	int y = p_x * (BLOCK_SIZE / 4) + p_y *  (BLOCK_SIZE / 4);
+
+	SDL_Rect src = {
+		.w = p_game->dust.rect.w,
+		.h = p_game->dust.rect.h
+	};
+
+	/* offset into the middle of the screen */
+	x += MAP_POS_X + p_game->screen_shake_offset.x;
+	y += MAP_POS_Y + p_game->screen_shake_offset.y;
+
+	block_t *block = &p_game->map[p_y][p_x];
+
+	for (size_t i = 0; i < SIZE_OF(block->particles); ++ i) {
+		if (block->particles[i] == NULL)
+			continue;
+
+		p_game->dust.rect.x = x + block->particles[i]->x;
+		p_game->dust.rect.y = y + block->particles[i]->y;
+
+		float alpha = (float)block->particles[i]->timer / block->particles[i]->lifetime * 255;
+		SDL_SetTextureAlphaMod(p_game->dust.texture, alpha);
+
+		texture_render(&p_game->dust, p_game->renderer, &src);
+	}
 }
 
 SDL_Point game_get_block_sheet_pos(game_t *p_game, block_type_t p_type) {
@@ -271,6 +307,28 @@ const char *game_mode_name(game_t *p_game) {
 	case MODE_DELETING: return "Deleting";
 
 	default: assert(0 && "Non-existant game mode");
+	}
+}
+
+void game_emit_particles_at(game_t *p_game, int p_x, int p_y, size_t p_amount) {
+	for (size_t i = 0; p_amount > 0; ++ i) {
+		if (i > SIZE_OF(p_game->particles))
+			assert(0 && "No free particles in the particles pool");
+
+		if (p_game->particles[i].timer != 0)
+			continue;
+
+		int x = BLOCK_SIZE / 2 - p_game->dust.rect.w / 2;
+		int y = 10 - p_game->dust.rect.h / 2;
+
+		x += 5 - rand() % 10;
+		y -= rand() % 4;
+
+		block_emit_particle(&p_game->map[p_y][p_x], &p_game->particles[i], &p_game->dust,
+		                    (float)(4 - rand() % 8) / 10, -(float)(3 + rand() % 6) / 10,
+		                    x, y, 35, 0);
+
+		-- p_amount;
 	}
 }
 
@@ -299,6 +357,7 @@ void game_refund_cursor_block(game_t *p_game) {
 	block_remove_top(game_cursor_block(p_game));
 
 	game_shake_screen(p_game);
+	game_emit_particles_at(p_game, p_game->cursor.x, p_game->cursor.y, 12);
 }
 
 void game_render(game_t *p_game) {
@@ -395,6 +454,8 @@ void game_update(game_t *p_game) {
 
 			if (p_game->map[i][j].top_timer > 0)
 				-- p_game->map[i][j].top_timer;
+
+			block_update_particles(&p_game->map[i][j]);
 		}
 	}
 
