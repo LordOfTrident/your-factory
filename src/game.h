@@ -64,6 +64,8 @@ typedef struct {
 	text_renderer_t trend;
 	texture_t       blocks, gold_icon, dust, arrows, block_outline;
 
+	texture_t right_arrow, left_arrow;
+
 	SDL_Point block_id_pos_map[BLOCKS_COUNT];
 
 	block_t map[MAP_SIZE][MAP_SIZE];
@@ -80,8 +82,12 @@ typedef struct {
 	SDL_Point mouse_drag_begin, prev_camera;
 	bool      dragging;
 
+	size_t shop_pos;
+
 	bool quit, loaded;
 } game_t;
+
+extern block_type_t blocks_shop[];
 
 void usage(void);
 void version(void);
@@ -103,6 +109,8 @@ SDL_Point game_get_block_sheet_pos(game_t *p_game, block_type_t p_type);
 
 block_t *game_cursor_block(game_t *p_game);
 bool     game_cursor_has_block(game_t *p_game);
+
+bool game_mouse_touches(game_t *p_game, SDL_Rect *p_rect);
 
 const char *game_mode_name(game_t *p_game);
 

@@ -1,5 +1,11 @@
 #include "game.h"
 
+block_type_t blocks_shop[] = {
+	BLOCK_CONVEYOR,
+	BLOCK_FINISH,
+	BLOCK_DROPPER
+};
+
 void usage(void) {
 	puts("Usage: your-factory [OPTIONS]\n"
 	     "https://github.com/LordOfTrident/your-factory\n"
@@ -77,6 +83,8 @@ game_t game_new(void) {
 
 	game.keyboard = SDL_GetKeyboardState(NULL);
 
+	game.gold = 175;
+
 	font_t font = font_load("./res/font.bmp");
 	game.trend  = text_renderer_new(game.renderer, &font);
 
@@ -87,13 +95,31 @@ game_t game_new(void) {
 	game.block_outline = texture_load(game.renderer, "./res/block_outline.bmp");
 
 	for (int i = 0; i < BLOCKS_COUNT; ++ i) {
-		game.block_id_pos_map[i].x = i % (game.blocks.rect.w / BLOCK_SIZE) * BLOCK_SIZE;
-		game.block_id_pos_map[i].y = i / (game.blocks.rect.w / BLOCK_SIZE) * BLOCK_SIZE;
+		game.block_id_pos_map[i].x = i % (game.blocks.dest.w / BLOCK_SIZE) * BLOCK_SIZE;
+		game.block_id_pos_map[i].y = i / (game.blocks.dest.w / BLOCK_SIZE) * BLOCK_SIZE;
 	}
 
 	game.cursor_block = block_new_with_top(BLOCK_GRASS, BLOCK_CONVEYOR);
 	game.cursor.x = MAP_SIZE / 2;
 	game.cursor.y = MAP_SIZE / 2;
+
+	game.block_outline.dest.x = SCREEN_W / 2 - game.block_outline.dest.w / 2;
+	game.block_outline.dest.y = 2;
+
+	game.left_arrow.texture = game.arrows.texture;
+
+	game.left_arrow.dest.x = game.block_outline.dest.x - game.arrows.dest.w / 2 - 1;
+	game.left_arrow.dest.y = game.block_outline.dest.y + game.block_outline.dest.h / 2 -
+	                         game.arrows.dest.h / 4 - 1;
+	game.left_arrow.dest.w = game.arrows.dest.w / 2,
+	game.left_arrow.dest.h = game.arrows.dest.h / 2;
+
+	game.left_arrow.src.w = game.arrows.src.w / 2;
+	game.left_arrow.src.h = game.arrows.src.h / 2;
+
+	game.right_arrow        = game.left_arrow;
+	game.right_arrow.dest.x = game.block_outline.dest.x + game.block_outline.dest.w + 1;
+	game.right_arrow.src.x  = game.right_arrow.src.w;
 
 	return game;
 }
@@ -205,7 +231,8 @@ void game_render_cursor(game_t *p_game) {
 			SDL_SetTextureAlphaMod(p_game->blocks.texture,
 			                       (sin((float)p_game->tick / 10) + 1) * 100);
 
-			if (p_game->mode == MODE_DELETING || game_cursor_has_block(p_game))
+			if (p_game->mode == MODE_DELETING || game_cursor_has_block(p_game) ||
+			    block_type_cost(p_game->cursor_block.top) > p_game->gold)
 				SDL_SetTextureColorMod(p_game->blocks.texture, 255, 20, 20);
 			else
 				SDL_SetTextureColorMod(p_game->blocks.texture, 0, 255, 0);
@@ -243,82 +270,78 @@ void game_render_map(game_t *p_game) {
 void game_render_ui(game_t *p_game) {
 	texture_t mode = text_renderer_render(&p_game->trend, game_mode_name(p_game));
 
-	mode.rect.x = SCREEN_W / 2 - mode.rect.w / 2;
-	mode.rect.y = SCREEN_H - mode.rect.h * 2;
+	mode.dest.x = SCREEN_W / 2 - mode.dest.w / 2;
+	mode.dest.y = SCREEN_H - mode.dest.h * 2;
 
-	texture_render(&mode, p_game->renderer, NULL);
+	texture_render(&mode, p_game->renderer);
 
 	char gold_str[128] = {0};
 	snprintf(gold_str, sizeof(gold_str), "%zu", p_game->gold);
 
 	texture_t gold = text_renderer_render(&p_game->trend, gold_str);
 
-	gold.rect.x = p_game->trend.font.ch_w / 2 + p_game->gold_icon.rect.w + 2;
-	gold.rect.y = gold.rect.h / 2;
+	gold.dest.x = p_game->trend.font.ch_w / 2 + p_game->gold_icon.dest.w + 2;
+	gold.dest.y = gold.dest.h / 2;
 
-	p_game->gold_icon.rect.x = p_game->trend.font.ch_w / 2;
-	p_game->gold_icon.rect.y = gold.rect.h / 2 - round(p_game->gold_icon.rect.h - gold.rect.h) / 2;
-	texture_render(&p_game->gold_icon, p_game->renderer, NULL);
+	p_game->gold_icon.dest.x = p_game->trend.font.ch_w / 2;
+	p_game->gold_icon.dest.y = gold.dest.h / 2 - round(p_game->gold_icon.dest.h - gold.dest.h) / 2;
+	texture_render(&p_game->gold_icon, p_game->renderer);
 
-	texture_render(&gold, p_game->renderer, NULL);
+	texture_render(&gold, p_game->renderer);
 
 	if (p_game->mode == MODE_PLACING) {
-		p_game->block_outline.rect.x = SCREEN_W / 2 - p_game->block_outline.rect.w / 2;
-		p_game->block_outline.rect.y = 2;
+		texture_render(&p_game->block_outline, p_game->renderer);
 
-		texture_render(&p_game->block_outline, p_game->renderer, NULL);
+		bool touching = game_mouse_touches(p_game, &p_game->left_arrow.dest);
+		if (touching)
+			p_game->left_arrow.src.y = p_game->left_arrow.src.h;
 
-		SDL_Rect src = {
-			.x = 0,
-			.y = 0,
-			.w = p_game->arrows.rect.w / 2,
-			.h = p_game->arrows.rect.h
-		};
+		texture_render(&p_game->left_arrow, p_game->renderer);
 
-		texture_t arrow = {
-			.texture = p_game->arrows.texture,
-			.rect = {
-				.x = p_game->block_outline.rect.x - p_game->arrows.rect.w / 2 - 1,
-				.y = p_game->block_outline.rect.y + p_game->block_outline.rect.h / 2 -
-				     p_game->arrows.rect.h / 2 - 1,
-				.w = p_game->arrows.rect.w / 2,
-				.h = p_game->arrows.rect.h
-			}
-		};
+		if (touching)
+			p_game->left_arrow.src.y = 0;
 
-		texture_render(&arrow, p_game->renderer, &src);
+		touching = game_mouse_touches(p_game, &p_game->right_arrow.dest);
+		if (touching)
+			p_game->right_arrow.src.y = p_game->right_arrow.src.h;
 
-		arrow.rect.x = p_game->block_outline.rect.x + p_game->block_outline.rect.w + 1;
-		src.x        = src.w;
+		texture_render(&p_game->right_arrow, p_game->renderer);
 
-		texture_render(&arrow, p_game->renderer, &src);
+		if (touching)
+			p_game->right_arrow.src.y = 0;
 
 		SDL_Point sheet_pos = game_get_block_sheet_pos(p_game, p_game->cursor_block.top);
 
 		SDL_Rect dest = {
-			.x = p_game->block_outline.rect.x + 2,
-			.y = p_game->block_outline.rect.y + 2,
+			.x = p_game->block_outline.dest.x + 2,
+			.y = p_game->block_outline.dest.y + 2,
 			.w = BLOCK_SIZE,
 			.h = BLOCK_SIZE
 		};
 
-		src.x = sheet_pos.x;
-		src.y = sheet_pos.y;
-		src.w = BLOCK_SIZE;
-		src.h = BLOCK_SIZE;
+		SDL_Rect src = {
+			.x = sheet_pos.x,
+			.y = sheet_pos.y,
+			.w = BLOCK_SIZE,
+			.h = BLOCK_SIZE
+		};
 
 		SDL_RenderCopy(p_game->renderer, p_game->blocks.texture, &src, &dest);
+
+		snprintf(gold_str, sizeof(gold_str), "%zu", block_type_cost(blocks_shop[p_game->shop_pos]));
+
+		gold = text_renderer_render(&p_game->trend, gold_str);
+
+		gold.dest.x = SCREEN_W / 2 - gold.dest.w / 2;
+		gold.dest.y = p_game->block_outline.dest.y + p_game->block_outline.dest.h + 1;
+
+		texture_render(&gold, p_game->renderer);
 	}
 }
 
 void game_render_particles_at(game_t *p_game, int p_x, int p_y) {
 	int x = p_x * (BLOCK_SIZE / 2) + p_y * -(BLOCK_SIZE / 2);
 	int y = p_x * (BLOCK_SIZE / 4) + p_y *  (BLOCK_SIZE / 4);
-
-	SDL_Rect src = {
-		.w = p_game->dust.rect.w,
-		.h = p_game->dust.rect.h
-	};
 
 	/* offset into the middle of the screen */
 	x += MAP_POS_X + p_game->screen_shake_offset.x - p_game->camera.x;
@@ -330,13 +353,13 @@ void game_render_particles_at(game_t *p_game, int p_x, int p_y) {
 		if (block->particles[i] == NULL)
 			continue;
 
-		p_game->dust.rect.x = x + block->particles[i]->x;
-		p_game->dust.rect.y = y + block->particles[i]->y;
+		p_game->dust.dest.x = x + block->particles[i]->x;
+		p_game->dust.dest.y = y + block->particles[i]->y;
 
 		float alpha = (float)block->particles[i]->timer / block->particles[i]->lifetime * 255;
 		SDL_SetTextureAlphaMod(p_game->dust.texture, alpha);
 
-		texture_render(&p_game->dust, p_game->renderer, &src);
+		texture_render(&p_game->dust, p_game->renderer);
 	}
 }
 
@@ -350,6 +373,11 @@ block_t *game_cursor_block(game_t *p_game) {
 
 bool game_cursor_has_block(game_t *p_game) {
 	return p_game->map[p_game->cursor.y][p_game->cursor.x].has_top;
+}
+
+bool game_mouse_touches(game_t *p_game, SDL_Rect *p_rect) {
+	return p_game->mouse.x >= p_rect->x && p_game->mouse.y >= p_rect->y &&
+	       p_game->mouse.x <= p_rect->x + p_rect->w && p_game->mouse.y <= p_rect->y + p_rect->h;
 }
 
 const char *game_mode_name(game_t *p_game) {
@@ -370,8 +398,8 @@ void game_emit_particles_at(game_t *p_game, int p_x, int p_y, size_t p_amount) {
 		if (p_game->particles[i].timer != 0)
 			continue;
 
-		int x = BLOCK_SIZE / 2 - p_game->dust.rect.w / 2;
-		int y = 10 - p_game->dust.rect.h / 2;
+		int x = BLOCK_SIZE / 2 - p_game->dust.dest.w / 2;
+		int y = 10 - p_game->dust.dest.h / 2;
 
 		x += 5 - rand() % 10;
 		y -= rand() % 4;
@@ -397,6 +425,10 @@ void game_animate_block(game_t *p_game, SDL_Point p_pos) {
 }
 
 void game_place_cursor_block(game_t *p_game) {
+	if (block_type_cost(p_game->cursor_block.top) > p_game->gold)
+		return;
+
+	p_game->gold -= block_type_cost(p_game->cursor_block.top);
 	block_add_top(game_cursor_block(p_game),
 	              p_game->cursor_block.top,
 	              p_game->cursor_block.dir);
@@ -441,13 +473,36 @@ void game_events(game_t *p_game) {
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
-			p_game->dragging         = true;
-			p_game->mouse_drag_begin = p_game->mouse;
-			p_game->prev_camera      = p_game->camera;
+			if (game_mouse_touches(p_game, &p_game->left_arrow.dest))
+				break;
+			else if (game_mouse_touches(p_game, &p_game->right_arrow.dest))
+				break;
+			else {
+				p_game->dragging         = true;
+				p_game->mouse_drag_begin = p_game->mouse;
+				p_game->prev_camera      = p_game->camera;
+			}
 
 			break;
 
-		case SDL_MOUSEBUTTONUP: p_game->dragging = false; break;
+		case SDL_MOUSEBUTTONUP:
+			if (game_mouse_touches(p_game, &p_game->left_arrow.dest)) {
+				if (p_game->shop_pos == 0)
+					p_game->shop_pos = SIZE_OF(blocks_shop) - 1;
+				else
+					-- p_game->shop_pos;
+
+				p_game->cursor_block.top = blocks_shop[p_game->shop_pos];
+			} else if (game_mouse_touches(p_game, &p_game->right_arrow.dest)) {
+				++ p_game->shop_pos;
+				if (p_game->shop_pos >= SIZE_OF(blocks_shop))
+					p_game->shop_pos = 0;
+
+				p_game->cursor_block.top = blocks_shop[p_game->shop_pos];
+			} else if (p_game->dragging)
+				p_game->dragging = false;
+
+			break;
 
 		case SDL_KEYDOWN:
 			switch (p_game->event.key.keysym.sym) {
@@ -488,9 +543,6 @@ void game_events(game_t *p_game) {
 			case SDLK_ESCAPE:    p_game->mode = MODE_VIEWING;  break;
 			case SDLK_e:         p_game->mode = MODE_PLACING;  break;
 			case SDLK_BACKSPACE: p_game->mode = MODE_DELETING; break;
-
-			case SDLK_1: p_game->cursor_block.top = BLOCK_CONVEYOR; break;
-			case SDLK_2: p_game->cursor_block.top = BLOCK_FINISH;   break;
 
 			case SDLK_r:
 				if (p_game->mode == MODE_PLACING) {

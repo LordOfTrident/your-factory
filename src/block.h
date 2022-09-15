@@ -59,7 +59,7 @@ typedef struct {
 	dir_t  dir;
 	size_t cost;
 
-	particle_t *particles[64];
+	particle_t *particles[80];
 	bool        has_particles;
 
 	size_t timer, anim_time;

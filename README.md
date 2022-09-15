@@ -19,6 +19,7 @@
 ## Table of contents
 * [Introduction](#introduction)
 * [Quickstart](#quickstart)
+* [Milestones](#milestones)
 * [Controls](#controls)
 * [Bugs](#bugs)
 * [Dependencies](#dependencies)
@@ -33,6 +34,15 @@ land! This game is still in early stages
 $ make
 $ ./bin/app
 ```
+
+## Milestones
+- [X] A simple tilemap where you can place and delete blocks
+- [X] Gold system
+- [X] Block placing UI
+- [ ] Main menu
+- [ ] Editable ground blocks
+- [ ] Droppers, things moving on the conveyors
+- [ ] Save/load system
 
 ## Controls
 | Key        | Action                 |

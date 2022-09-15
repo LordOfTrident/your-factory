@@ -114,11 +114,12 @@ texture_t text_renderer_render(text_renderer_t *p_trend, const char *p_text) {
 
 	texture_t text_texture = {
 		.texture = texture,
-		.rect = {
+		.dest = {
 			.w = src.w * text_len,
 			.h = src.h
 		}
 	};
+	text_texture.src = text_texture.dest;
 
 	p_trend->cache[idx].key   = text;
 	p_trend->cache[idx].value = text_texture;

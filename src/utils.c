@@ -45,8 +45,10 @@ texture_t texture_load(SDL_Renderer *p_renderer, const char *p_path) {
 	} else
 		SDL_Log("Loaded asset '%s'", p_path);
 
-	texture.rect.w = surface->w;
-	texture.rect.h = surface->h;
+	texture.dest.w = surface->w;
+	texture.dest.h = surface->h;
+
+	texture.src = texture.dest;
 
 	Uint32 color_key = SDL_MapRGB(surface->format, 255, 0, 255);
 	SDL_SetColorKey(surface, true, color_key);
@@ -68,8 +70,8 @@ void texture_free(texture_t *p_texture) {
 		SDL_DestroyTexture(p_texture->texture);
 }
 
-void texture_render(texture_t *p_texture, SDL_Renderer *p_renderer, SDL_Rect *p_src) {
-	SDL_RenderCopy(p_renderer, p_texture->texture, p_src, &p_texture->rect);
+void texture_render(texture_t *p_texture, SDL_Renderer *p_renderer) {
+	SDL_RenderCopy(p_renderer, p_texture->texture, &p_texture->src, &p_texture->dest);
 }
 
 SDL_Color SDL_GetSurfacePixel(SDL_Surface *p_surface, int p_x, int p_y) {
