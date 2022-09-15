@@ -105,6 +105,8 @@ void game_quit(game_t *p_game) {
 	texture_free(&p_game->blocks);
 	texture_free(&p_game->gold_icon);
 	texture_free(&p_game->dust);
+	texture_free(&p_game->arrows);
+	texture_free(&p_game->block_outline);
 
 	SDL_DestroyTexture(p_game->screen);
 	SDL_DestroyRenderer(p_game->renderer);
