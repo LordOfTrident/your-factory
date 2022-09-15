@@ -1,10 +1,6 @@
 #ifndef GAME_H__HEADER_GUARD__
 #define GAME_H__HEADER_GUARD__
 
-/* TODO:
-	i guess add functions like game_block_update_particles and game_block_render_particles
-*/
-
 #include <stdlib.h>  /* exit, EXIT_FAILURE, EXIT_SUCCESS, size_t */
 #include <stdbool.h> /* bool, true, false */
 #include <math.h>    /* sin, round */
@@ -18,7 +14,7 @@
 #include "particle.h"
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 2
+#define VERSION_MINOR 3
 #define VERSION_PATCH 1
 
 #define TITLE "Your Factory"
@@ -46,6 +42,8 @@
 
 #define REFUND_PENALTY 0.7
 
+#define MOUSE_DRAG_FRICTION 3
+
 typedef enum {
 	MODE_VIEWING = 0,
 	MODE_PLACING,
@@ -64,7 +62,7 @@ typedef struct {
 	size_t fps, tick;
 
 	text_renderer_t trend;
-	texture_t       blocks, gold_icon, dust;
+	texture_t       blocks, gold_icon, dust, arrows, block_outline;
 
 	SDL_Point block_id_pos_map[BLOCKS_COUNT];
 
@@ -72,12 +70,15 @@ typedef struct {
 
 	particle_t particles[512];
 
-	SDL_Point cursor;
+	SDL_Point       cursor, camera, mouse;
 	block_t         cursor_block;
 	interact_mode_t mode;
 
 	size_t gold, shake_timer, map_anim_it;
 	SDL_Point screen_shake_offset;
+
+	SDL_Point mouse_drag_begin, prev_camera;
+	bool      dragging;
 
 	bool quit, loaded;
 } game_t;

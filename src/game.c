@@ -80,9 +80,11 @@ game_t game_new(void) {
 	font_t font = font_load("./res/font.bmp");
 	game.trend  = text_renderer_new(game.renderer, &font);
 
-	game.blocks    = texture_load(game.renderer, "./res/blocks.bmp");
-	game.gold_icon = texture_load(game.renderer, "./res/icons.bmp");
-	game.dust      = texture_load(game.renderer, "./res/particles.bmp");
+	game.blocks        = texture_load(game.renderer, "./res/blocks.bmp");
+	game.gold_icon     = texture_load(game.renderer, "./res/icons.bmp");
+	game.dust          = texture_load(game.renderer, "./res/particles.bmp");
+	game.arrows        = texture_load(game.renderer, "./res/arrows.bmp");
+	game.block_outline = texture_load(game.renderer, "./res/block_outline.bmp");
 
 	for (int i = 0; i < BLOCKS_COUNT; ++ i) {
 		game.block_id_pos_map[i].x = i % (game.blocks.rect.w / BLOCK_SIZE) * BLOCK_SIZE;
@@ -144,8 +146,8 @@ void game_render_isometric_tile(game_t *p_game, int p_x, int p_y, int p_size,
 	};
 
 	/* offset into the middle of the screen */
-	dest.x += MAP_POS_X + p_game->screen_shake_offset.x;
-	dest.y += MAP_POS_Y + p_game->screen_shake_offset.y;
+	dest.x += MAP_POS_X + p_game->screen_shake_offset.x - p_game->camera.x;
+	dest.y += MAP_POS_Y + p_game->screen_shake_offset.y - p_game->camera.y;
 
 	if (p_size != BLOCK_SIZE) {
 		dest.x += BLOCK_SIZE / 2 - p_size / 2;
@@ -257,6 +259,54 @@ void game_render_ui(game_t *p_game) {
 	texture_render(&p_game->gold_icon, p_game->renderer, NULL);
 
 	texture_render(&gold, p_game->renderer, NULL);
+
+	if (p_game->mode == MODE_PLACING) {
+		p_game->block_outline.rect.x = SCREEN_W / 2 - p_game->block_outline.rect.w / 2;
+		p_game->block_outline.rect.y = 2;
+
+		texture_render(&p_game->block_outline, p_game->renderer, NULL);
+
+		SDL_Rect src = {
+			.x = 0,
+			.y = 0,
+			.w = p_game->arrows.rect.w / 2,
+			.h = p_game->arrows.rect.h
+		};
+
+		texture_t arrow = {
+			.texture = p_game->arrows.texture,
+			.rect = {
+				.x = p_game->block_outline.rect.x - p_game->arrows.rect.w / 2 - 1,
+				.y = p_game->block_outline.rect.y + p_game->block_outline.rect.h / 2 -
+				     p_game->arrows.rect.h / 2 - 1,
+				.w = p_game->arrows.rect.w / 2,
+				.h = p_game->arrows.rect.h
+			}
+		};
+
+		texture_render(&arrow, p_game->renderer, &src);
+
+		arrow.rect.x = p_game->block_outline.rect.x + p_game->block_outline.rect.w + 1;
+		src.x        = src.w;
+
+		texture_render(&arrow, p_game->renderer, &src);
+
+		SDL_Point sheet_pos = game_get_block_sheet_pos(p_game, p_game->cursor_block.top);
+
+		SDL_Rect dest = {
+			.x = p_game->block_outline.rect.x + 2,
+			.y = p_game->block_outline.rect.y + 2,
+			.w = BLOCK_SIZE,
+			.h = BLOCK_SIZE
+		};
+
+		src.x = sheet_pos.x;
+		src.y = sheet_pos.y;
+		src.w = BLOCK_SIZE;
+		src.h = BLOCK_SIZE;
+
+		SDL_RenderCopy(p_game->renderer, p_game->blocks.texture, &src, &dest);
+	}
 }
 
 void game_render_particles_at(game_t *p_game, int p_x, int p_y) {
@@ -269,8 +319,8 @@ void game_render_particles_at(game_t *p_game, int p_x, int p_y) {
 	};
 
 	/* offset into the middle of the screen */
-	x += MAP_POS_X + p_game->screen_shake_offset.x;
-	y += MAP_POS_Y + p_game->screen_shake_offset.y;
+	x += MAP_POS_X + p_game->screen_shake_offset.x - p_game->camera.x;
+	y += MAP_POS_Y + p_game->screen_shake_offset.y - p_game->camera.y;
 
 	block_t *block = &p_game->map[p_y][p_x];
 
@@ -382,6 +432,21 @@ void game_events(game_t *p_game) {
 		switch (p_game->event.type) {
 		case SDL_QUIT: p_game->quit = true; break;
 
+		case SDL_MOUSEMOTION:
+			p_game->mouse.x = p_game->event.motion.x;
+			p_game->mouse.y = p_game->event.motion.y;
+
+			break;
+
+		case SDL_MOUSEBUTTONDOWN:
+			p_game->dragging         = true;
+			p_game->mouse_drag_begin = p_game->mouse;
+			p_game->prev_camera      = p_game->camera;
+
+			break;
+
+		case SDL_MOUSEBUTTONUP: p_game->dragging = false; break;
+
 		case SDL_KEYDOWN:
 			switch (p_game->event.key.keysym.sym) {
 			case SDLK_q: p_game->quit = true; break;
@@ -457,6 +522,14 @@ void game_update(game_t *p_game) {
 
 			block_update_particles(&p_game->map[i][j]);
 		}
+	}
+
+	if (p_game->dragging) {
+		p_game->camera.x = (p_game->mouse_drag_begin.x - p_game->mouse.x) /
+		                   MOUSE_DRAG_FRICTION + p_game->prev_camera.x;
+
+		p_game->camera.y = (p_game->mouse_drag_begin.y - p_game->mouse.y) /
+		                   MOUSE_DRAG_FRICTION + p_game->prev_camera.y;
 	}
 
 	if (p_game->shake_timer > 0) {
