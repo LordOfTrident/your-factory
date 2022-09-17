@@ -18,6 +18,10 @@
 #define SMEMREALLOC(p_ptr, p_size) (p_ptr = memrealloc(p_ptr, sizeof(p_ptr[0]) * p_size))
 #define SMEMFREE(p_ptr)            (memfree((void**)&p_ptr))
 
+#define CENTER(p_size, p_screen_size) (p_screen_size / 2 - p_size / 2)
+#define ENDX(p_rect) (p_rect.x + p_rect.w)
+#define ENDY(p_rect) (p_rect.y + p_rect.h)
+
 void *memalloc(size_t p_size);
 void *memrealloc(void *p_ptr, size_t p_size);
 void  memfree(void **p_ptr);
@@ -28,13 +32,11 @@ char *copy_str(const char *p_str);
 
 typedef struct {
 	SDL_Texture *texture;
-	SDL_Rect     dest, src;
-} texture_t;
+	SDL_Rect     rect;
+} asset_t;
 
-texture_t texture_load(SDL_Renderer *p_renderer, const char *p_path);
-void      texture_free(texture_t *p_texture);
-
-void texture_render(texture_t *p_texture, SDL_Renderer *p_renderer);
+asset_t asset_load(SDL_Renderer *p_renderer, const char *p_path);
+void    asset_free(asset_t *p_asset);
 
 SDL_Color SDL_GetSurfacePixel(SDL_Surface *p_surface, int p_x, int p_y);
 

@@ -27,7 +27,7 @@ typedef struct {
 
 	struct {
 		const char *key;
-		texture_t   value;
+		asset_t     value;
 	} cache[128];
 	size_t cache_size;
 } text_renderer_t;
@@ -35,6 +35,6 @@ typedef struct {
 text_renderer_t text_renderer_new(SDL_Renderer *p_renderer, font_t *p_font);
 void            text_renderer_destroy(text_renderer_t *p_trend);
 
-texture_t text_renderer_render(text_renderer_t *p_trend, const char *p_text);
+asset_t text_renderer_render(text_renderer_t *p_trend, const char *p_text);
 
 #endif

@@ -6,3 +6,4 @@ All the game updates
 - `0.2.1`: Added particles
 - `0.3.1`: Added block placing UI, not functional yet
 - `0.3.2`: Made the block placing UI function
+- `0.3.3`: Added a temporary paused screen

@@ -52,13 +52,13 @@ text_renderer_t text_renderer_new(SDL_Renderer *p_renderer, font_t *p_font) {
 void text_renderer_destroy(text_renderer_t *p_trend) {
 	for (size_t i = 0; i < p_trend->cache_size; ++ i) {
 		if (p_trend->cache[i].value.texture != NULL) {
-			texture_free(&p_trend->cache[i].value);
+			asset_free(&p_trend->cache[i].value);
 			SMEMFREE(p_trend->cache[i].key);
 		}
 	}
 }
 
-texture_t text_renderer_render(text_renderer_t *p_trend, const char *p_text) {
+asset_t text_renderer_render(text_renderer_t *p_trend, const char *p_text) {
 	for (size_t i = 0; i < p_trend->cache_size; ++ i) {
 		if (strcmp(p_trend->cache[i].key, p_text) == 0)
 			return p_trend->cache[i].value;
@@ -112,14 +112,13 @@ texture_t text_renderer_render(text_renderer_t *p_trend, const char *p_text) {
 
 	SDL_FreeSurface(surface);
 
-	texture_t text_texture = {
+	asset_t text_texture = {
 		.texture = texture,
-		.dest = {
+		.rect    = {
 			.w = src.w * text_len,
 			.h = src.h
 		}
 	};
-	text_texture.src = text_texture.dest;
 
 	p_trend->cache[idx].key   = text;
 	p_trend->cache[idx].value = text_texture;

@@ -34,8 +34,8 @@ char *copy_str(const char *p_str) {
 	return (char*)memalloccopy(p_str, strlen(p_str) + 1);
 }
 
-texture_t texture_load(SDL_Renderer *p_renderer, const char *p_path) {
-	texture_t texture = {0};
+asset_t asset_load(SDL_Renderer *p_renderer, const char *p_path) {
+	asset_t asset = {0};
 
 	SDL_Surface *surface = SDL_LoadBMP(p_path);
 	if (surface == NULL) {
@@ -45,33 +45,24 @@ texture_t texture_load(SDL_Renderer *p_renderer, const char *p_path) {
 	} else
 		SDL_Log("Loaded asset '%s'", p_path);
 
-	texture.dest.w = surface->w;
-	texture.dest.h = surface->h;
-
-	texture.src = texture.dest;
+	asset.rect.w = surface->w;
+	asset.rect.h = surface->h;
 
 	Uint32 color_key = SDL_MapRGB(surface->format, 255, 0, 255);
 	SDL_SetColorKey(surface, true, color_key);
 
-	texture.texture = SDL_CreateTextureFromSurface(p_renderer, surface);
-	if (texture.texture == NULL) {
+	asset.texture = SDL_CreateTextureFromSurface(p_renderer, surface);
+	if (asset.texture == NULL) {
 		SDL_Log("%s", SDL_GetError());
 
 		exit(EXIT_FAILURE);
 	}
 
-	SDL_FreeSurface(surface);
-
-	return texture;
+	return asset;
 }
 
-void texture_free(texture_t *p_texture) {
-	if (p_texture->texture != NULL)
-		SDL_DestroyTexture(p_texture->texture);
-}
-
-void texture_render(texture_t *p_texture, SDL_Renderer *p_renderer) {
-	SDL_RenderCopy(p_renderer, p_texture->texture, &p_texture->src, &p_texture->dest);
+void asset_free(asset_t *p_asset) {
+	SDL_DestroyTexture(p_asset->texture);
 }
 
 SDL_Color SDL_GetSurfacePixel(SDL_Surface *p_surface, int p_x, int p_y) {

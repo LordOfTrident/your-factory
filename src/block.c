@@ -69,7 +69,7 @@ void block_update_particles(block_t *p_block) {
 		p_block->has_particles = false;
 }
 
-void block_emit_particle(block_t *p_block, particle_t *p_particle, texture_t *p_texture,
+void block_emit_particle(block_t *p_block, particle_t *p_particle, asset_t *p_asset,
                          float p_vel_x, float p_vel_y,
                          int p_x, int p_y, size_t p_lifetime, float p_gravity) {
 	p_block->has_particles = true;
@@ -77,7 +77,7 @@ void block_emit_particle(block_t *p_block, particle_t *p_particle, texture_t *p_
 	for (size_t i = 0; i < SIZE_OF(p_block->particles); ++ i) {
 		if (p_block->particles[i] == NULL) {
 			p_block->particles[i] = p_particle;
-			particle_emit(p_particle, p_texture, p_vel_x, p_vel_y, p_x, p_y, p_lifetime, p_gravity);
+			particle_emit(p_particle, p_asset, p_vel_x, p_vel_y, p_x, p_y, p_lifetime, p_gravity);
 
 			return;
 		}

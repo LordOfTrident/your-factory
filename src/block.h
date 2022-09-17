@@ -79,7 +79,7 @@ void block_add_top(block_t *p_block, block_type_t p_top, dir_t p_dir);
 void block_remove_top(block_t *p_block);
 
 void block_update_particles(block_t *p_block);
-void block_emit_particle(block_t *p_block, particle_t *p_particle, texture_t *p_texture,
+void block_emit_particle(block_t *p_block, particle_t *p_particle, asset_t *p_asset,
                          float p_vel_x, float p_vel_y,
                          int p_x, int p_y, size_t p_lifetime, float p_gravity);
 
