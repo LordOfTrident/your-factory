@@ -2,6 +2,7 @@
 #define IMAGE_H__HEADER_GUARD__
 
 #include "utils.h"
+#include "asset.h"
 
 typedef struct {
 	SDL_Texture *texture;

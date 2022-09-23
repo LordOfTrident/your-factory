@@ -3,7 +3,7 @@
 
 #include <stdlib.h> /* size_t */
 
-#include "utils.h"
+#include "asset.h"
 
 #define FRICTION 0.95
 

@@ -51,11 +51,12 @@ $ ./bin/app
 | A          | Move cursor left       |
 | S          | Move cursor down       |
 | D          | Move cursor right      |
+| R          | Rotate the block       |
 | E          | Placing mode           |
 | Backspace  | Deleting mode          |
 | Enter      | Place/Delete           |
 | ESC        | Exit the current mode  |
-| Q          | Quit the game          |
+| Arrows     | Move the camera        |
 
 ## Bugs
 If you find any bugs, please create an issue and report them.

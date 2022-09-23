@@ -16,10 +16,11 @@ int main(int p_argc, char **p_argv) {
 		}
 	}
 
-	game_t game = game_new();
-	game_run(&game);
+	game_t game;
 
-	game_quit(&game);
+	game_init(&game);
+	game_run(&game);
+	game_finish(&game);
 
 	return EXIT_SUCCESS;
 }

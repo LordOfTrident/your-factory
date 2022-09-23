@@ -1,0 +1,87 @@
+==40119== Memcheck, a memory error detector
+==40119== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==40119== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==40119== Command: ./bin/app
+==40119== 
+INFO: Loaded font './res/font.bmp'
+INFO: Loaded asset './res/blocks.bmp'
+INFO: Loaded asset './res/icons.bmp'
+INFO: Loaded asset './res/particles.bmp'
+INFO: Loaded asset './res/arrows.bmp'
+INFO: Loaded asset './res/outline.bmp'
+INFO: Loaded asset './res/menu.bmp'
+==40119== Invalid read of size 8
+==40119==    at 0x10C06B: game_render_world (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10C7F1: game_render (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10CFC7: game_run (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10A7D1: main (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==  Address 0x1ffefa3f60 is on thread 1's stack
+==40119==  192 bytes below stack pointer
+==40119== 
+==40119== Invalid read of size 8
+==40119==    at 0x10DDC7: world_render_cursor_inactive (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10C7F1: game_render (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10CFC7: game_run (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10A7D1: main (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==  Address 0x1ffef483c8 is on thread 1's stack
+==40119==  375896 bytes below stack pointer
+==40119== 
+==40119== Invalid read of size 8
+==40119==    at 0x10DDCB: world_render_cursor_inactive (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10C7F1: game_render (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10CFC7: game_run (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10A7D1: main (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==  Address 0x1ffefa3f60 is on thread 1's stack
+==40119==  192 bytes below stack pointer
+==40119== 
+==40119== Invalid read of size 8
+==40119==    at 0x10AEF6: block_renderer_set_alpha (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10DDE1: world_render_cursor_inactive (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10C7F1: game_render (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10CFC7: game_run (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10A7D1: main (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==  Address 0x1ffef483c8 is on thread 1's stack
+==40119==  375864 bytes below stack pointer
+==40119== 
+==40119== Invalid read of size 8
+==40119==    at 0x10AEFF: block_renderer_set_alpha (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10DDE1: world_render_cursor_inactive (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10C7F1: game_render (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10CFC7: game_run (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10A7D1: main (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==  Address 0x1ffefa3f60 is on thread 1's stack
+==40119==  160 bytes below stack pointer
+==40119== 
+==40119== Invalid read of size 8
+==40119==    at 0x10AF09: block_renderer_set_alpha (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10DDE1: world_render_cursor_inactive (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10C7F1: game_render (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10CFC7: game_run (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10A7D1: main (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==  Address 0x1ffef483c8 is on thread 1's stack
+==40119==  375864 bytes below stack pointer
+==40119== 
+==40119== Invalid read of size 8
+==40119==    at 0x10AF10: block_renderer_set_alpha (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10DDE1: world_render_cursor_inactive (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10C7F1: game_render (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10CFC7: game_run (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==    by 0x10A7D1: main (in /home/reinhold/Dev/C/Github/fact/bin/app)
+==40119==  Address 0x1ffefa3f60 is on thread 1's stack
+==40119==  160 bytes below stack pointer
+==40119== 
+==40119== 
+==40119== HEAP SUMMARY:
+==40119==     in use at exit: 3,130,657 bytes in 10,302 blocks
+==40119==   total heap usage: 78,764 allocs, 68,462 frees, 24,278,087 bytes allocated
+==40119== 
+==40119== LEAK SUMMARY:
+==40119==    definitely lost: 32 bytes in 1 blocks
+==40119==    indirectly lost: 0 bytes in 0 blocks
+==40119==      possibly lost: 939,162 bytes in 3,857 blocks
+==40119==    still reachable: 2,191,463 bytes in 6,444 blocks
+==40119==         suppressed: 0 bytes in 0 blocks
+==40119== Rerun with --leak-check=full to see details of leaked memory
+==40119== 
+==40119== For lists of detected and suppressed errors, rerun with: -s
+==40119== ERROR SUMMARY: 7 errors from 7 contexts (suppressed: 2 from 2)

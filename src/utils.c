@@ -34,35 +34,15 @@ char *copy_str(const char *p_str) {
 	return (char*)memalloccopy(p_str, strlen(p_str) + 1);
 }
 
-asset_t asset_load(SDL_Renderer *p_renderer, const char *p_path) {
-	asset_t asset = {0};
-
-	SDL_Surface *surface = SDL_LoadBMP(p_path);
-	if (surface == NULL) {
-		SDL_Log("%s", SDL_GetError());
-
-		exit(EXIT_FAILURE);
-	} else
-		SDL_Log("Loaded asset '%s'", p_path);
-
-	asset.rect.w = surface->w;
-	asset.rect.h = surface->h;
-
-	Uint32 color_key = SDL_MapRGB(surface->format, 255, 0, 255);
-	SDL_SetColorKey(surface, true, color_key);
-
-	asset.texture = SDL_CreateTextureFromSurface(p_renderer, surface);
-	if (asset.texture == NULL) {
-		SDL_Log("%s", SDL_GetError());
-
-		exit(EXIT_FAILURE);
-	}
-
-	return asset;
+void flag_set(int *p_value, int p_flag, bool p_set) {
+	if (p_set)
+		*p_value |= p_flag;
+	else
+		*p_value &= ~p_flag;
 }
 
-void asset_free(asset_t *p_asset) {
-	SDL_DestroyTexture(p_asset->texture);
+bool flag_get(int p_value, int p_flag) {
+	return p_value & p_flag;
 }
 
 SDL_Color SDL_GetSurfacePixel(SDL_Surface *p_surface, int p_x, int p_y) {

@@ -4,6 +4,7 @@
 #include <stdbool.h> /* bool, true, false */
 
 #include "utils.h"
+#include "asset.h"
 
 typedef enum {
 	BUTTON_STATE_NONE = 0,

@@ -2,12 +2,13 @@
 #define TEXT_H__HEADER_GUARD__
 
 #include <stdlib.h>  /* size_t */
-#include <string.h>  /* strcmp */
+#include <string.h>  /* strcmp, memset */
 #include <stdbool.h> /* bool, true, false */
 
 #include <SDL2/SDL.h>
 
 #include "utils.h"
+#include "asset.h"
 
 typedef struct {
 	SDL_Surface *sheet;
@@ -32,9 +33,9 @@ typedef struct {
 	size_t cache_size;
 } text_renderer_t;
 
-text_renderer_t text_renderer_new(SDL_Renderer *p_renderer, font_t *p_font);
-void            text_renderer_destroy(text_renderer_t *p_trend);
+void text_renderer_init(text_renderer_t *p_text_renderer, SDL_Renderer *p_renderer, font_t *p_font);
+void text_renderer_destroy(text_renderer_t *p_text_renderer);
 
-asset_t text_renderer_render(text_renderer_t *p_trend, const char *p_text);
+asset_t text_renderer_render(text_renderer_t *p_text_renderer, const char *p_text);
 
 #endif

@@ -30,13 +30,8 @@ void *memalloccopy(const void *p_ptr, size_t p_size);
 
 char *copy_str(const char *p_str);
 
-typedef struct {
-	SDL_Texture *texture;
-	SDL_Rect     rect;
-} asset_t;
-
-asset_t asset_load(SDL_Renderer *p_renderer, const char *p_path);
-void    asset_free(asset_t *p_asset);
+void flag_set(int *p_value, int p_flag, bool p_set);
+bool flag_get(int p_value, int p_flag);
 
 SDL_Color SDL_GetSurfacePixel(SDL_Surface *p_surface, int p_x, int p_y);
 
