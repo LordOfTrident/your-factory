@@ -11,6 +11,8 @@ typedef struct {
 
 image_t image_new(asset_t *p_asset, int p_x, int p_y);
 
+void image_set_alpha(image_t *p_image, Uint8 p_a);
+
 void image_render(image_t *p_image, SDL_Renderer *p_renderer);
 
 #endif

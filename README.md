@@ -45,18 +45,22 @@ $ ./bin/app
 - [ ] Save/load system
 
 ## Controls
-| Key        | Action                 |
-| ---------- | ---------------------- |
-| W          | Move cursor up         |
-| A          | Move cursor left       |
-| S          | Move cursor down       |
-| D          | Move cursor right      |
-| R          | Rotate the block       |
-| E          | Placing mode           |
-| Backspace  | Deleting mode          |
-| Enter      | Place/Delete           |
-| ESC        | Exit the current mode  |
-| Arrows     | Move the camera        |
+| Key         | Action                |
+| ----------- | --------------------- |
+| W           | Move cursor up        |
+| A           | Move cursor left      |
+| S           | Move cursor down      |
+| D           | Move cursor right     |
+| R           | Rotate the block      |
+| 1           | Deleting mode         |
+| 2           | Placing mode          |
+| 3           | Changing mode         |
+| Enter       | Place/Delete          |
+| ESC         | Exit the current mode |
+| Up arrow    | Move the camera up    |
+| Left arrow  | Move the camera left  |
+| Down arrow  | Move the camera down  |
+| Right arrow | Move the camera right |
 
 ## Bugs
 If you find any bugs, please create an issue and report them.

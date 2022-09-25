@@ -15,8 +15,8 @@
 #include "world.h"
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 3
-#define VERSION_PATCH 3
+#define VERSION_MINOR 4
+#define VERSION_PATCH 4
 
 #define TITLE "Your Factory"
 
@@ -34,17 +34,30 @@
 #define FPS_CAP    60
 #define BLINK_TIME 20
 
+#define REFUND_PENALTY 0.7
+
 #define DEFAULT_GOLD 175
+
+#define SHOP_REPOS_TIME 10
+#define PREV_NEXT_BLOCKS_OFFSET (BLOCK_SIZE + 14)
 
 enum {
 	ASSET_BLOCKS = 0,
-	ASSET_ICONS,
+	ASSET_GOLD,
 	ASSET_PARTICLES,
 	ASSET_ARROWS,
 	ASSET_OUTLINE,
 	ASSET_MENU,
+	ASSET_ICONS,
 	ASSETS_COUNT
 };
+
+typedef enum {
+	MODE_VIEWING = 0,
+	MODE_DELETING,
+	MODE_PLACING,
+	MODE_CHANGING
+} interact_mode_t;
 
 typedef struct {
 	SDL_Window   *window;
@@ -69,7 +82,7 @@ typedef struct {
 	asset_t assets[ASSETS_COUNT];
 
 	struct {
-		image_t outline, gold;
+		image_t outline, gold, icons[3];
 	} img;
 
 	struct {
@@ -78,7 +91,8 @@ typedef struct {
 
 	SDL_Point mouse;
 
-	size_t shop_pos;
+	size_t shop_pos, shop_repos_timer;
+	dir_t  shop_repos_dir;
 
 	bool quit, paused, can_place;
 } game_t;

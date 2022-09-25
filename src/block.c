@@ -72,8 +72,8 @@ block_sprite_t block_get_sprite(block_t *p_block) {
 	case BLOCK_BRICK: return BLOCK_SPRITE_BRICK;
 
 	case BLOCK_CONVEYOR: return BLOCK_SPRITE_CONVEYOR + p_block->dir;
-	case BLOCK_FINISH:   return BLOCK_SPRITE_FINISH   + p_block->dir;
-	case BLOCK_DROPPER:  return BLOCK_SPRITE_DROPPER  + p_block->dir;
+	case BLOCK_FINISH:   return BLOCK_SPRITE_FINISH;
+	case BLOCK_DROPPER:  return BLOCK_SPRITE_DROPPER + p_block->dir;
 
 	default: assert(0 && "block_get_sprite(): got incorrect block type");
 	}

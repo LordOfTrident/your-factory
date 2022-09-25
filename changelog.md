@@ -7,3 +7,5 @@ All the game updates
 - `0.3.1`: Added block placing UI, not functional yet
 - `0.3.2`: Made the block placing UI function
 - `0.3.3`: Added a temporary paused screen
+- `0.4.3`: Added mode icons, changed controls
+- `0.4.4`: Added placing ui block animations

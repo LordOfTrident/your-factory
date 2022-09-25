@@ -10,23 +10,13 @@
 #define BLOCK_ANIM_TIME 15
 #define BLOCK_ANIM_DELAY_BETWEEN_COLUMN 2
 
-#define GRAVITY_ACCELERATION 0.3
-
 #define SCREEN_SHAKE_TIME 5
-
-#define REFUND_PENALTY 0.7
 
 #define CAM_SPEED 2
 
 #define FLAG_UPDATE_CAM (1 << 0)
 #define FLAG_LOAD_MAP   (1 << 1)
 #define FLAG_MAP_LOADED (1 << 2)
-
-typedef enum {
-	MODE_VIEWING = 0,
-	MODE_PLACING,
-	MODE_DELETING
-} interact_mode_t;
 
 typedef struct {
 	block_renderer_t *block_renderer;
