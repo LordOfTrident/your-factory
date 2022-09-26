@@ -3,7 +3,16 @@
 block_type_t blocks_shop[] = {
 	BLOCK_CONVEYOR,
 	BLOCK_FINISH,
-	BLOCK_DROPPER
+	BLOCK_DROPPER,
+	BLOCK_BOULDER,
+	BLOCK_TREE,
+	BLOCK_HIGH_GRASS
+};
+
+block_type_t ground_blocks_shop[] = {
+	BLOCK_GRASS,
+	BLOCK_STONE,
+	BLOCK_BRICK
 };
 
 void usage(void) {
@@ -127,7 +136,7 @@ void game_init(game_t *p_game) {
 	p_game->img.icons[2].src.x  = p_game->assets[ASSET_ICONS].rect.w / 3 * 2;
 
 	int x = p_game->img.outline.dest.x - p_game->assets[ASSET_ARROWS].rect.w / 2 - 1;
-	int y = p_game->img.outline.dest.y + CENTER(p_game->assets[ASSET_ARROWS].rect.h / 2,
+	int y = p_game->img.outline.dest.y + CENTER(p_game->assets[ASSET_ARROWS].rect.h / 3,
 	                                            p_game->img.outline.dest.h) - 1;
 
 	p_game->button.left = button_new(&p_game->assets[ASSET_ARROWS], x, y);
@@ -194,7 +203,7 @@ const char *game_mode_name(game_t *p_game) {
 	case MODE_VIEWING:  return "Viewing";
 	case MODE_DELETING: return "Deleting";
 	case MODE_PLACING:  return "Placing";
-	case MODE_CHANGING: return "Changing";
+	case MODE_PATHING:  return "Pathing";
 
 	default: assert(0 && "game_mode_name(): non-existant game mode");
 	}
@@ -205,19 +214,63 @@ void game_place_cursor_block(game_t *p_game) {
 		return;
 
 	p_game->gold -= p_game->cursor_block.cost;
+
 	tile_add_top(world_cursor_tile(&p_game->world), p_game->cursor_block.type,
 	             p_game->cursor_block.dir);
 
 	block_set_timer(&world_cursor_tile(&p_game->world)->top, BLOCK_ANIM_TIME);
 }
 
+void game_place_path_cursor_block(game_t *p_game) {
+	if (p_game->cursor_block.cost > p_game->gold)
+		return;
+
+	if (p_game->cursor_block.type == BLOCK_GRASS)
+		p_game->gold += p_game->cursor_block.cost;
+	else
+		p_game->gold -= p_game->cursor_block.cost;
+
+	tile_set_floor(world_cursor_tile(&p_game->world), p_game->cursor_block.type);
+}
+
 void game_refund_cursor_block(game_t *p_game) {
 	p_game->gold += world_cursor_tile(&p_game->world)->top.cost * REFUND_PENALTY;
+
 	tile_remove_top(world_cursor_tile(&p_game->world));
 
 	world_shake(&p_game->world);
 	world_emit_particles_at(&p_game->world, &p_game->assets[ASSET_PARTICLES],
 	                        p_game->world.cursor.x, p_game->world.cursor.y, 12);
+}
+
+void game_set_mode(game_t *p_game, interact_mode_t p_mode) {
+	p_game->mode = p_mode;
+
+	switch (p_mode) {
+	case MODE_PLACING:
+		p_game->shop_pos  = 0;
+		p_game->shop      = blocks_shop;
+		p_game->shop_size = SIZE_OF(blocks_shop);
+
+		block_set_type(&p_game->cursor_block, game_shop_element(p_game));
+
+		break;
+
+	case MODE_PATHING:
+		p_game->shop_pos  = 0;
+		p_game->shop      = ground_blocks_shop;
+		p_game->shop_size = SIZE_OF(ground_blocks_shop);
+
+		block_set_type(&p_game->cursor_block, game_shop_element(p_game));
+
+		break;
+
+	default: break;
+	}
+}
+
+block_type_t game_shop_element(game_t *p_game) {
+	return p_game->shop[p_game->shop_pos];
 }
 
 void game_render(game_t *p_game) {
@@ -238,7 +291,10 @@ void game_render(game_t *p_game) {
 }
 
 void game_render_world(game_t *p_game) {
-	world_render_map(&p_game->world);
+	if (p_game->mode == MODE_PATHING)
+		world_render_map_inactive_top(&p_game->world);
+	else
+		world_render_map(&p_game->world);
 
 	Uint8 a = p_game->paused? 128 : (sin((float)p_game->tick / 10) + 1) * 100;
 
@@ -248,7 +304,7 @@ void game_render_world(game_t *p_game) {
 	case MODE_PLACING:
 		{
 			Uint8 r, g, b;
-			if (p_game->can_place) {
+			if (!world_block_at_cursor(&p_game->world)) {
 				r = 0;
 				g = 255;
 				b = 0;
@@ -259,7 +315,26 @@ void game_render_world(game_t *p_game) {
 			}
 
 			world_render_cursor_active(&p_game->world, block_get_sprite(&p_game->cursor_block),
-			                           r, g, b, a);
+			                           LAYER_TOP, r, g, b, a);
+		}
+
+		break;
+
+	case MODE_PATHING:
+		{
+			Uint8 r, g, b;
+			if (world_cursor_tile(&p_game->world)->floor.type != p_game->cursor_block.type) {
+				r = 0;
+				g = 255;
+				b = 0;
+			} else {
+				r = 255;
+				g = 20;
+				b = 20;
+			}
+
+			world_render_cursor_active(&p_game->world, block_get_sprite(&p_game->cursor_block),
+			                           LAYER_FLOOR, r, g, b, a);
 		}
 
 		break;
@@ -289,18 +364,15 @@ void game_render_ui(game_t *p_game) {
 			image_set_alpha(&p_game->img.icons[i], SDL_ALPHA_OPAQUE);
 	}
 
-	if (p_game->mode == MODE_PLACING)
-		game_render_placing_ui(p_game);
+	if (p_game->mode == MODE_PLACING || p_game->mode == MODE_PATHING)
+		game_render_shop_ui(p_game);
 
 	if (p_game->paused)
 		game_render_paused_ui(p_game);
 }
 
-void game_render_placing_ui(game_t *p_game) {
+void game_render_shop_ui(game_t *p_game) {
 	image_render(&p_game->img.outline, p_game->renderer);
-
-	button_render(&p_game->button.left, p_game->renderer);
-	button_render(&p_game->button.right, p_game->renderer);
 
 	if (p_game->cursor_block.cost > p_game->gold)
 		block_renderer_set_alpha(&p_game->block_renderer, 128);
@@ -322,14 +394,14 @@ void game_render_placing_ui(game_t *p_game) {
 		block_renderer_set_alpha(&p_game->block_renderer, SDL_ALPHA_OPAQUE);
 
 	char gold_str[128] = {0};
-	snprintf(gold_str, sizeof(gold_str), "%zu", block_type_cost(blocks_shop[p_game->shop_pos]));
+	snprintf(gold_str, sizeof(gold_str), "%zu", block_type_cost(game_shop_element(p_game)));
 
 	game_render_text_center_x(p_game, ENDY(p_game->img.outline.dest) + 1, gold_str);
 
 	block_t prev = p_game->cursor_block, next = p_game->cursor_block;
 
-	if (p_game->shop_pos + 1 < SIZE_OF(blocks_shop)) {
-		block_set_type(&next, blocks_shop[p_game->shop_pos + 1]);
+	if (p_game->shop_pos + 1 < p_game->shop_size) {
+		block_set_type(&next, p_game->shop[p_game->shop_pos + 1]);
 
 		int x = CENTERX(BLOCK_SIZE) + PREV_NEXT_BLOCKS_OFFSET;
 		int y = p_game->img.outline.dest.y + 2;
@@ -348,7 +420,7 @@ void game_render_placing_ui(game_t *p_game) {
 	}
 
 	if (p_game->shop_pos > 0) {
-		block_set_type(&prev, blocks_shop[p_game->shop_pos - 1]);
+		block_set_type(&prev, p_game->shop[p_game->shop_pos - 1]);
 
 		int x = CENTERX(BLOCK_SIZE) - PREV_NEXT_BLOCKS_OFFSET;
 		int y = p_game->img.outline.dest.y + 2;
@@ -366,6 +438,8 @@ void game_render_placing_ui(game_t *p_game) {
 		block_renderer_set_alpha(&p_game->block_renderer, SDL_ALPHA_OPAQUE);
 	}
 
+	button_render(&p_game->button.left, p_game->renderer);
+	button_render(&p_game->button.right, p_game->renderer);
 }
 
 void game_render_gold_ui(game_t *p_game) {
@@ -452,7 +526,7 @@ void game_keyboard(game_t *p_game) {
 void game_events_ingame(game_t *p_game) {
 	button_events(&p_game->button.menu, &p_game->event, &p_game->mouse);
 
-	if (p_game->mode == MODE_PLACING) {
+	if (p_game->mode == MODE_PLACING || p_game->mode == MODE_PATHING) {
 		button_events(&p_game->button.left,  &p_game->event, &p_game->mouse);
 		button_events(&p_game->button.right, &p_game->event, &p_game->mouse);
 
@@ -461,11 +535,11 @@ void game_events_ingame(game_t *p_game) {
 				return;
 
 			if (p_game->shop_pos == 0)
-				p_game->shop_pos = SIZE_OF(blocks_shop) - 1;
+				p_game->shop_pos = p_game->shop_size - 1;
 			else
 				-- p_game->shop_pos;
 
-			block_set_type(&p_game->cursor_block, blocks_shop[p_game->shop_pos]);
+			block_set_type(&p_game->cursor_block, game_shop_element(p_game));
 
 			p_game->shop_repos_timer = SHOP_REPOS_TIME;
 			p_game->shop_repos_dir   = DIR_LEFT;
@@ -476,10 +550,10 @@ void game_events_ingame(game_t *p_game) {
 				return;
 
 			++ p_game->shop_pos;
-			if (p_game->shop_pos >= SIZE_OF(blocks_shop))
+			if (p_game->shop_pos >= p_game->shop_size)
 				p_game->shop_pos = 0;
 
-			block_set_type(&p_game->cursor_block, blocks_shop[p_game->shop_pos]);
+			block_set_type(&p_game->cursor_block, game_shop_element(p_game));
 
 			p_game->shop_repos_timer = SHOP_REPOS_TIME;
 			p_game->shop_repos_dir   = DIR_RIGHT;
@@ -498,15 +572,15 @@ void game_events_ingame(game_t *p_game) {
 	case SDL_MOUSEWHEEL:
 		if (p_game->event.wheel.y > 0) {
 			switch (p_game->mode) {
-			case MODE_VIEWING:  p_game->mode = MODE_CHANGING; break;
-			case MODE_CHANGING: p_game->mode = MODE_DELETING; break;
+			case MODE_VIEWING: p_game->mode = MODE_PATHING;  break;
+			case MODE_PATHING: p_game->mode = MODE_DELETING; break;
 
 			default: ++ p_game->mode;
 			}
 		} else if (p_game->event.wheel.y < 0) {
 			switch (p_game->mode) {
 			case MODE_VIEWING:  p_game->mode = MODE_DELETING; break;
-			case MODE_DELETING: p_game->mode = MODE_CHANGING; break;
+			case MODE_DELETING: p_game->mode = MODE_PATHING;  break;
 
 			default: -- p_game->mode;
 			}
@@ -517,17 +591,40 @@ void game_events_ingame(game_t *p_game) {
 	case SDL_KEYDOWN:
 		switch (p_game->event.key.keysym.sym) {
 		case SDLK_RETURN:
-			if (p_game->mode == MODE_PLACING && !world_block_at_cursor(&p_game->world))
+			switch (p_game->mode) {
+			case MODE_PLACING:
+				if (world_block_at_cursor(&p_game->world))
+					break;
+
 				game_place_cursor_block(p_game);
-			else if (p_game->mode == MODE_DELETING && world_block_at_cursor(&p_game->world))
+
+				break;
+
+			case MODE_DELETING:
+				if (!world_block_at_cursor(&p_game->world))
+					break;
+
 				game_refund_cursor_block(p_game);
+
+				break;
+
+			case MODE_PATHING:
+				if (world_cursor_tile(&p_game->world)->floor.type == p_game->cursor_block.type)
+					break;
+
+				game_place_path_cursor_block(p_game);
+
+				break;
+
+			default: break;
+			}
 
 			break;
 
-		case SDLK_ESCAPE: p_game->mode = MODE_VIEWING;  break;
-		case SDLK_1:      p_game->mode = MODE_DELETING; break;
-		case SDLK_2:      p_game->mode = MODE_PLACING;  break;
-		case SDLK_3:      p_game->mode = MODE_CHANGING; break;
+		case SDLK_ESCAPE: game_set_mode(p_game, MODE_VIEWING);  break;
+		case SDLK_1:      game_set_mode(p_game, MODE_DELETING); break;
+		case SDLK_2:      game_set_mode(p_game, MODE_PLACING);  break;
+		case SDLK_3:      game_set_mode(p_game, MODE_PATHING);  break;
 
 		case SDLK_r:
 			if (p_game->mode == MODE_PLACING) {
@@ -572,9 +669,6 @@ void game_update(game_t *p_game) {
 
 	if (p_game->shop_repos_timer > 0)
 		-- p_game->shop_repos_timer;
-
-	if (p_game->mode == MODE_PLACING)
-		p_game->can_place = world_cursor_tile(&p_game->world)->top.type == BLOCK_AIR;
 
 	if (!p_game->paused)
 		world_update(&p_game->world, p_game->tick);

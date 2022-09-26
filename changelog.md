@@ -9,3 +9,5 @@ All the game updates
 - `0.3.3`: Added a temporary paused screen
 - `0.4.3`: Added mode icons, changed controls
 - `0.4.4`: Added placing ui block animations
+- `0.5.4`: Added decorations
+- `0.6.4`: Added path changing

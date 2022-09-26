@@ -46,10 +46,11 @@ bool    world_block_at_cursor(world_t *p_world);
 void world_emit_particles_at(world_t *p_world, asset_t *p_asset, int p_x, int p_y, size_t p_amount);
 
 void world_render_map(world_t *p_world);
+void world_render_map_inactive_top(world_t *p_world);
 
 void world_render_cursor_inactive(world_t *p_world);
 void world_render_cursor_select(world_t *p_world, Uint8 p_r, Uint8 p_g, Uint8 p_b, Uint8 p_a);
-void world_render_cursor_active(world_t *p_world, block_sprite_t p_cursor_block,
+void world_render_cursor_active(world_t *p_world, block_sprite_t p_cursor_block, layer_t p_layer,
                                 Uint8 p_r, Uint8 p_g, Uint8 p_b, Uint8 p_a);
 
 void world_events(world_t *p_world, SDL_Event *p_event);

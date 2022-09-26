@@ -9,7 +9,11 @@ size_t block_type_cost_map[BLOCKS_COUNT] = {
 
 	[BLOCK_CONVEYOR] = 25,
 	[BLOCK_FINISH]   = 50,
-	[BLOCK_DROPPER]  = 75
+	[BLOCK_DROPPER]  = 75,
+
+	[BLOCK_BOULDER]    = 15,
+	[BLOCK_TREE]       = 15,
+	[BLOCK_HIGH_GRASS] = 5
 };
 
 size_t block_type_cost(block_type_t p_type) {
@@ -75,6 +79,10 @@ block_sprite_t block_get_sprite(block_t *p_block) {
 	case BLOCK_FINISH:   return BLOCK_SPRITE_FINISH;
 	case BLOCK_DROPPER:  return BLOCK_SPRITE_DROPPER + p_block->dir;
 
+	case BLOCK_BOULDER:    return BLOCK_SPRITE_BOULDER;
+	case BLOCK_TREE:       return BLOCK_SPRITE_TREE;
+	case BLOCK_HIGH_GRASS: return BLOCK_SPRITE_HIGH_GRASS;
+
 	default: assert(0 && "block_get_sprite(): got incorrect block type");
 	}
 }
@@ -91,6 +99,10 @@ tile_t tile_new(block_type_t p_floor, bool p_active) {
 void tile_add_top(tile_t *p_tile, block_type_t p_top, dir_t p_dir) {
 	p_tile->top     = block_new(p_top, true);
 	p_tile->top.dir = p_dir;
+}
+
+void tile_set_floor(tile_t *p_tile, block_type_t p_floor) {
+	p_tile->floor = block_new(p_floor, true);
 }
 
 void tile_remove_top(tile_t *p_tile) {

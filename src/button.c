@@ -6,14 +6,14 @@ button_t button_new(asset_t *p_asset, int p_x, int p_y) {
 
 		.src = {
 			.w = p_asset->rect.w,
-			.h = p_asset->rect.h / 2
+			.h = p_asset->rect.h / 3
 		},
 
 		.dest = {
 			.x = p_x,
 			.y = p_y,
 			.w = p_asset->rect.w,
-			.h = p_asset->rect.h / 2
+			.h = p_asset->rect.h / 3
 		}
 	};
 }
@@ -39,14 +39,18 @@ void button_events(button_t *p_button, SDL_Event *p_event, SDL_Point *p_mouse) {
 		break;
 
 	case SDL_MOUSEBUTTONDOWN:
-		if (p_button->hovered)
+		if (p_button->hovered) {
 			p_button->state = BUTTON_STATE_DOWN;
+			p_button->src.y = p_button->src.h * 2;
+		}
 
 		break;
 
 	case SDL_MOUSEBUTTONUP:
-		if (p_button->hovered && p_button->state == BUTTON_STATE_DOWN)
+		if (p_button->hovered && p_button->state == BUTTON_STATE_DOWN) {
 			p_button->state = BUTTON_STATE_UP;
+			p_button->src.y = p_button->src.h;
+		}
 
 		break;
 	}

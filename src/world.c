@@ -112,6 +112,19 @@ void world_render_map(world_t *p_world) {
 	}
 }
 
+void world_render_map_inactive_top(world_t *p_world) {
+	for (int i = 0; i < MAP_SIZE; ++ i) {
+		for (int j = 0; j < MAP_SIZE; ++ j) {
+			block_renderer_render(p_world->block_renderer, j, i,
+			                      &p_world->map[i][j].floor, LAYER_FLOOR);
+
+			block_renderer_set_alpha(p_world->block_renderer, 128);
+			block_renderer_render(p_world->block_renderer, j, i,
+			                      &p_world->map[i][j].top, LAYER_TOP);
+			block_renderer_set_alpha(p_world->block_renderer, SDL_ALPHA_OPAQUE);
+		}
+	}
+}
 void world_render_cursor_inactive(world_t *p_world) {
 	block_renderer_set_alpha(p_world->block_renderer, 128);
 
@@ -137,13 +150,13 @@ void world_render_cursor_select(world_t *p_world, Uint8 p_r, Uint8 p_g, Uint8 p_
 	                             p_world->cursor_sprite, BLOCK_SIZE, LAYER_FLOOR);
 }
 
-void world_render_cursor_active(world_t *p_world, block_sprite_t p_cursor_block,
+void world_render_cursor_active(world_t *p_world, block_sprite_t p_cursor_block, layer_t p_layer,
                                 Uint8 p_r, Uint8 p_g, Uint8 p_b, Uint8 p_a) {
 	block_renderer_set_color(p_world->block_renderer, p_r, p_g, p_b);
 	block_renderer_set_alpha(p_world->block_renderer, p_a);
 
 	block_renderer_render_sprite(p_world->block_renderer, p_world->cursor.x, p_world->cursor.y,
-	                             p_cursor_block, BLOCK_SIZE, LAYER_TOP);
+	                             p_cursor_block, BLOCK_SIZE, p_layer);
 
 	block_renderer_set_color(p_world->block_renderer, 255, 255, 255);
 	block_renderer_set_alpha(p_world->block_renderer, SDL_ALPHA_OPAQUE);

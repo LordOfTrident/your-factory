@@ -32,6 +32,10 @@ typedef enum {
 	BLOCK_SPRITE_DROPPER_DOWN,
 	BLOCK_SPRITE_DROPPER_RIGHT,
 
+	BLOCK_SPRITE_BOULDER,
+	BLOCK_SPRITE_TREE,
+	BLOCK_SPRITE_HIGH_GRASS,
+
 	BLOCK_SPRITES_COUNT
 } block_sprite_t;
 
@@ -45,6 +49,10 @@ typedef enum {
 	BLOCK_CONVEYOR,
 	BLOCK_FINISH,
 	BLOCK_DROPPER,
+
+	BLOCK_BOULDER,
+	BLOCK_TREE,
+	BLOCK_HIGH_GRASS,
 
 	BLOCKS_COUNT
 } block_type_t;
@@ -107,6 +115,7 @@ typedef struct {
 tile_t tile_new(block_type_t p_floor, bool p_active);
 
 void tile_add_top(tile_t *p_tile, block_type_t p_top, dir_t p_dir);
+void tile_set_floor(tile_t *p_tile, block_type_t p_floor);
 void tile_remove_top(tile_t *p_tile);
 
 void tile_update(tile_t *p_tile);

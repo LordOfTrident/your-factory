@@ -15,7 +15,7 @@
 #include "world.h"
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 4
+#define VERSION_MINOR 6
 #define VERSION_PATCH 4
 
 #define TITLE "Your Factory"
@@ -56,7 +56,7 @@ typedef enum {
 	MODE_VIEWING = 0,
 	MODE_DELETING,
 	MODE_PLACING,
-	MODE_CHANGING
+	MODE_PATHING
 } interact_mode_t;
 
 typedef struct {
@@ -94,10 +94,14 @@ typedef struct {
 	size_t shop_pos, shop_repos_timer;
 	dir_t  shop_repos_dir;
 
-	bool quit, paused, can_place;
+	block_type_t *shop;
+	size_t        shop_size;
+
+	bool quit, paused;
 } game_t;
 
 extern block_type_t blocks_shop[];
+extern block_type_t ground_blocks_shop[];
 
 void usage(void);
 void version(void);
@@ -110,13 +114,17 @@ void game_load_asset(game_t *p_game, const char *p_path, int p_key);
 void game_free_assets(game_t *p_game);
 
 void game_place_cursor_block(game_t *p_game);
+void game_place_path_cursor_block(game_t *p_game);
 void game_refund_cursor_block(game_t *p_game);
+
+void         game_set_mode(game_t *p_game, interact_mode_t p_mode);
+block_type_t game_shop_element(game_t *p_game);
 
 void game_render(game_t *p_game);
 
 void game_render_world(game_t *p_game);
 void game_render_ui(game_t *p_game);
-void game_render_placing_ui(game_t *p_game);
+void game_render_shop_ui(game_t *p_game);
 void game_render_gold_ui(game_t *p_game);
 void game_render_mode_ui(game_t *p_game);
 void game_render_paused_ui(game_t *p_game);
