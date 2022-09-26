@@ -572,17 +572,17 @@ void game_events_ingame(game_t *p_game) {
 	case SDL_MOUSEWHEEL:
 		if (p_game->event.wheel.y > 0) {
 			switch (p_game->mode) {
-			case MODE_VIEWING: p_game->mode = MODE_PATHING;  break;
-			case MODE_PATHING: p_game->mode = MODE_DELETING; break;
+			case MODE_VIEWING: game_set_mode(p_game, MODE_PATHING);  break;
+			case MODE_PATHING: game_set_mode(p_game, MODE_DELETING); break;
 
-			default: ++ p_game->mode;
+			default: game_set_mode(p_game, p_game->mode + 1);
 			}
 		} else if (p_game->event.wheel.y < 0) {
 			switch (p_game->mode) {
-			case MODE_VIEWING:  p_game->mode = MODE_DELETING; break;
-			case MODE_DELETING: p_game->mode = MODE_PATHING;  break;
+			case MODE_VIEWING:  game_set_mode(p_game, MODE_DELETING); break;
+			case MODE_DELETING: game_set_mode(p_game, MODE_PATHING);  break;
 
-			default: -- p_game->mode;
+			default: game_set_mode(p_game, p_game->mode - 1);
 			}
 		}
 

@@ -11,3 +11,4 @@ All the game updates
 - `0.4.4`: Added placing ui block animations
 - `0.5.4`: Added decorations
 - `0.6.4`: Added path changing
+- `0.6.5`: Fixed a bug that occured with using the scroll wheel to switch modes
