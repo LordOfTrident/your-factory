@@ -40,7 +40,7 @@ $ ./bin/app
 - [X] Gold system
 - [X] Block placing UI
 - [ ] Main menu
-- [ ] Editable ground blocks
+- [X] Editable ground blocks
 - [ ] Droppers, things moving on the conveyors
 - [ ] Save/load system
 
