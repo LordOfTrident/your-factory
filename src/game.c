@@ -90,6 +90,9 @@ void game_init(game_t *p_game) {
 
 	p_game->cursor_block = block_new(BLOCK_CONVEYOR, true);
 
+	time_t tmp = rand();
+	srand(time(&tmp));
+
 	/* load assets */
 	p_game->font = font_load("./res/font.bmp");
 	text_renderer_init(&p_game->text_renderer, p_game->renderer, &p_game->font);

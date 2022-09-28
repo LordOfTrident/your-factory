@@ -12,3 +12,4 @@ All the game updates
 - `0.5.4`: Added decorations
 - `0.6.4`: Added path changing
 - `0.6.5`: Fixed a bug that occured with using the scroll wheel to switch modes
+- `0.7.5`: Added randomly generated terrain

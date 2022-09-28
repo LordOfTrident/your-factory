@@ -6,6 +6,7 @@
 #include <string.h>  /* strcmp, memset */
 #include <math.h>    /* sin, round */
 #include <stdio.h>   /* snprintf, printf, puts */
+#include <time.h>    /* time, time_t */
 
 #include <SDL2/SDL.h>
 
@@ -15,7 +16,7 @@
 #include "world.h"
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 6
+#define VERSION_MINOR 7
 #define VERSION_PATCH 5
 
 #define TITLE "Your Factory"

@@ -18,6 +18,16 @@
 #define FLAG_LOAD_MAP   (1 << 1)
 #define FLAG_MAP_LOADED (1 << 2)
 
+enum {
+	GEN_NONE = 0,
+	GEN_HIGH_GRASS,
+	GEN_BOULDER,
+	GEN_TREE,
+	GEN_COUNT
+};
+
+extern int gen_chances[GEN_COUNT];
+
 typedef struct {
 	block_renderer_t *block_renderer;
 
@@ -34,6 +44,8 @@ typedef struct {
 } world_t;
 
 void world_init(world_t *p_world, block_renderer_t *p_block_renderer, int p_cam_x, int p_cam_y);
+
+void world_gen_terrain(world_t *p_world);
 
 void world_load_tile(world_t *p_world, int p_x, int p_y);
 void world_load_next(world_t *p_world);

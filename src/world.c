@@ -1,5 +1,12 @@
 #include "world.h"
 
+int gen_chances[GEN_COUNT] = {
+	[GEN_NONE]       = 70,
+	[GEN_HIGH_GRASS] = 50,
+	[GEN_BOULDER]    = 2,
+	[GEN_TREE]       = 8
+};
+
 void world_init(world_t *p_world, block_renderer_t *p_block_renderer, int p_cam_x, int p_cam_y) {
 	memset(p_world, 0, sizeof(world_t));
 
@@ -13,12 +20,43 @@ void world_init(world_t *p_world, block_renderer_t *p_block_renderer, int p_cam_
 
 	block_renderer_set_map_pos(p_block_renderer, p_world->cam.x, p_world->cam.y);
 
-	for (int i = 0; i < MAP_SIZE; ++ i) {
-		for (int j = 0; j < MAP_SIZE; ++ j)
-			p_world->map[i][j] = tile_new(BLOCK_GRASS, false);
-	}
+	world_gen_terrain(p_world);
 
 	flag_set(&p_world->flags, FLAG_LOAD_MAP, true);
+}
+
+void world_gen_terrain(world_t *p_world) {
+	int gen_chances_sum = 0;
+	for (int i = 0; i < GEN_COUNT; ++ i)
+		gen_chances_sum += gen_chances[i];
+
+	for (int i = 0; i < MAP_SIZE; ++ i) {
+		for (int j = 0; j < MAP_SIZE; ++ j) {
+			p_world->map[i][j] = tile_new(BLOCK_GRASS, false);
+
+			int gen = GEN_NONE, tmp = 0, rand_num = rand() % gen_chances_sum;
+			for (int i = 0; i < GEN_COUNT; ++ i) {
+				tmp += gen_chances[i];
+				if (rand_num < tmp) {
+					gen = i;
+
+					break;
+				}
+			}
+
+			switch (gen) {
+			case GEN_NONE: continue;
+
+			case GEN_HIGH_GRASS: tile_add_top(&p_world->map[i][j], BLOCK_HIGH_GRASS, DIR_UP); break;
+			case GEN_TREE:       tile_add_top(&p_world->map[i][j], BLOCK_TREE,       DIR_UP); break;
+			case GEN_BOULDER:    tile_add_top(&p_world->map[i][j], BLOCK_BOULDER,    DIR_UP); break;
+
+			default: assert(0 && "generated a value unhandled by switch");
+			}
+
+			p_world->map[i][j].top.active = false;
+		}
+	}
 }
 
 void world_load_tile(world_t *p_world, int p_x, int p_y) {

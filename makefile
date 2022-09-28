@@ -12,6 +12,7 @@ CC_LIBS = -lSDL2 -lm
 
 compile: ./bin $(OBJ) $(SRC)
 	$(CC) $(CC_FLAGS) -o $(OUT) $(OBJ) $(CC_LIBS)
+	cp -r ./res ./bin/
 
 bin/%.o: src/%.c $(DEPS)
 	$(CC) -c $< $(CC_FLAGS) -o $@
